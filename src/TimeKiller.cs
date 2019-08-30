@@ -7,10 +7,17 @@ namespace TimeKiller
     class TimeKiller
     {
         public const string GAME_VERSION = "test_v1.0";
-        public const string DataPath = @"c:\Program Files\TimeKiller";
+        public const string BasicPath = @"c:\Program Files\TimeKiller";
+        
+        static void BasicSet()
+        {
+            Directory.CreateDirectory(BasicPath);
+        }
         
         static void Main()
         {
+            BasicSet();
+            
             while (true)
             {
                 Console.Clear();
@@ -41,34 +48,26 @@ namespace TimeKiller
     
     class BeARich
     {
-        
         public const long StartMoney = 1000;
         public const string GAME_VERSION = "test_v1.0";
         
+        public static Tuple<string, int>[] scoreBoard;
+        
         public static void Game()
         {
+            BasicSet();
             Intro();
+        }
+        
+        private static void BasicSet()
+        {
+            // Directory.CreateDirectory();
         }
         
         public static long Intro()
         {
-            if (!File.Exists(TimeKiller.DataPath))
+            if (!File.Exists(TimeKiller.BasicPath))
                 Console.WriteLine("No Path Found!!");
-                
-            /*
-            FileStream fs = new FileStream("D:/data.bin", FileMode.Open, FileAccess.Read);
-            BinaryReader br = new BinaryReader(fs);
- 
-            int i = br.ReadInt32();
-            float f = br.ReadSingle();
-            double d = br.ReadDouble();
-            string str = br.ReadString();
- 
-            MessageBox.Show(i + " " + f + " " + d + " " + str);
- 
-            br.Close();
-            fs.Close();
-            */
             do
             {
                 Console.Clear();
@@ -78,6 +77,9 @@ namespace TimeKiller
                 Console.WriteLine("3. 점수판");
                 Console.WriteLine("4. 종료");
                 
+                Console.WriteLine(@"{0} 패치 내역
+                1", GAME_VERSION);
+                
                 char choice = Console.ReadKey().KeyChar;
                 switch(choice)
                 {
@@ -86,7 +88,7 @@ namespace TimeKiller
                     case '2':
                         return PlayContinue();
                     case '3':
-                        ScoreBoard();
+                        ShowScoreBoard();
                         break;
                     case '4':
                         return -1;
@@ -96,12 +98,17 @@ namespace TimeKiller
             
         }
         
+        static long PlayNew()
+        {
+            return 0;
+        }
+        
         static long PlayContinue()
         {
             return 0;
         }
         
-        static void ScoreBoard()
+        static void ShowScoreBoard()
         {
             Console.WriteLine("");
         }
