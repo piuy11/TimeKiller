@@ -7,11 +7,11 @@ namespace TimeKiller
     class TimeKiller
     {
         public const string GAME_VERSION = "test_v1.0";
-        public const string BasicPath = @"c:\Program Files\TimeKiller";
+        public const string BASIC_PATH = @"c:\Program Files\TimeKiller";
         
         static void BasicSet()
         {
-            Directory.CreateDirectory(BasicPath);
+            Directory.CreateDirectory(BASIC_PATH);
         }
         
         static void Main()
@@ -50,8 +50,12 @@ namespace TimeKiller
     {
         public const long StartMoney = 1000;
         public const string GAME_VERSION = "test_v1.0";
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\BeARich";
+        public const string SCOREBOARD_PATH = BASIC_PATH + @"\scoreborad.dat";
+        public const string SAVE_PATH = BASIC_PATH + @"save.dat";
         
-        public static Tuple<string, int>[] scoreBoard;
+        
+        private static Tuple<string, long>[] scoreBoard = new Tuple<string, long>[10];
         
         public static void Game()
         {
@@ -61,13 +65,30 @@ namespace TimeKiller
         
         private static void BasicSet()
         {
-            // Directory.CreateDirectory();
+            if (!File.Exists(SCOREBOARD_PATH)) {
+                BinaryWriter bw = new BinaryWriter(File.Open(SCOREBOARD_PATH, FileMode.CreateNew));
+                bw.Write("홍민준");
+                bw.Write(10000L);
+                bw.Close();
+            }
+                using (BinaryReader bw = new BinaryReader(File.Open(SCOREBOARD_PATH, FileMode.Open)))
+                {
+                    try {
+                        for (int i = 0; i < 10; ++i)
+                        {
+                            string name = bw.ReadString();
+                            long score = bw.ReadInt64();
+                            scoreBoard[i] = new Tuple<string, long>(name, score);
+                        }
+                    }
+                    catch (EndOfStreamException e) {
+                        // e();
+                    }
+                }
         }
         
         public static long Intro()
         {
-            if (!File.Exists(TimeKiller.BasicPath))
-                Console.WriteLine("No Path Found!!");
             do
             {
                 Console.Clear();
@@ -80,7 +101,7 @@ namespace TimeKiller
                 Console.WriteLine(@"{0} 패치 내역
                 1", GAME_VERSION);
                 
-                char choice = Console.ReadKey().KeyChar;
+                char choice = Console.ReadKey(true).KeyChar;
                 switch(choice)
                 {
                     case '1':
@@ -110,7 +131,13 @@ namespace TimeKiller
         
         static void ShowScoreBoard()
         {
-            Console.WriteLine("");
+            Console.Clear();
+            Console.WriteLine("점수판 : " + scoreBoard.Length);
+            foreach (var tuple in scoreBoard)
+            {
+                Console.Write(tuple);
+            }
+            Console.ReadKey(true);
         }
         
     }
