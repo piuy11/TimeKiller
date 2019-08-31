@@ -140,18 +140,42 @@ namespace TimeKiller
                 Console.WriteLine("3. 배팅한 돈의 10배 : 10%");
                 Console.WriteLine("4. 배팅한 돈의 100배 : 1%");
                 Console.WriteLine("5. 노가다 : + 50");
-                Console.WrtieLine("6. 구구단 맞추기 : + 100");
+                Console.WriteLine("6. 구구단 맞추기 : + 100");
+                
+                switch(Console.ReadKey(true).KeyChar)
+                {
+                    case '1':
+                        Console.WriteLine("1번을 입력하셨습니다.");
+                        Console.ReadKey(true);
+                        Gamble(ref money, 2);
+                        break;
+                    case '2':
+                        Console.WriteLine("2번을 입력하셨습니다.");
+                        Console.ReadKey(true);
+                        Gamble(ref money, 4);
+                        break;
+                    case '3':
+                        Console.WriteLine("3번을 입력하셨습니다.");
+                        Console.ReadKey(true);
+                        Gamble(ref money, 10);
+                        break;
+                    case '4':
+                        Console.WriteLine("4번을 입력하셨습니다.");
+                        Console.ReadKey(true);
+                        Gamble(ref money, 100);
+                        break;
+                }
             } while (money > 0);
         }
         
-        static void PlayContinue()
+        static long PlayContinue()
         {
             long money;
             using (BinaryReader br = new BinaryReader(File.Open(SAVE_PATH, FileMode.Open)))
             {
                 money = br.ReadInt64();
             }
-            return 0;
+            return money;
         }
         
         static void ShowScoreBoard()
@@ -180,8 +204,41 @@ namespace TimeKiller
             }
         }
         
-        static void Gamble()
+        static void Gamble(ref long money, int nTimes)
         {
+            double winChance = 1.0 / nTimes;
+            Console.WriteLine("얼마를 배팅하시겠습니까?");
+            long betMoney;
+            try {
+                betMoney = long.Parse(Console.ReadLine());
+            }
+            catch (FormatException e) {
+                Console.WriteLine("잘못된 입력입니다..!");
+                Console.ReadKey(true);
+                return;
+            }
+            
+            if (betMoney <= 0 || betMoney > money) {
+                Console.WriteLine("잘못된 입력입니다..!");
+                Console.ReadKey(true);
+                return;
+            }
+            
+            Console.WriteLine("- " + betMoney);
+            money -= betMoney;
+            Console.WriteLine("추첨을 진행하겠습니다.");
+            Console.ReadKey(true);
+            
+            Random randomSeed = new Random();
+            if (randomSeed.NextDouble() <= winChance) {
+                Console.WriteLine("축하합니다! 당첨되셨습니다! + " + betMoney * nTimes);
+                money += betMoney * nTimes;
+                Console.ReadKey(true);
+            }
+            else {
+                Console.WriteLine("블랙 말랑카우가 되셨습니다.. ㅠㅜ");
+                Console.ReadKey(true);
+            }
             
         }
     }
