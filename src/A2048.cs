@@ -65,6 +65,13 @@ namespace A
             }
         }
         
+        private void MoveLine()
+        {
+            int[] a = {1,2,3,4};
+            
+            
+        }
+        
         private void MoveLeft()
         {
             bool moved = false;
@@ -76,6 +83,7 @@ namespace A
                     if (board[i, j] == 0 && empty == 4)
                         empty = j;
                     else if (board[i, j] != 0 && empty != 4) {
+                        if ()
                         board[i, empty] = board[i, j];
                         board[i, j] = 0;
                         empty++;
