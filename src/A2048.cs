@@ -15,6 +15,7 @@ namespace A
             emptyList = new List<Tuple<int, int>>();
             
             board.Initialize();
+            board[1, 3] = 4;
             board[0, 3] = 2;
             for (int i = 0; i < 4; ++i)
             {
@@ -49,6 +50,21 @@ namespace A
             }
         }
         
+        private void MoveLine(ref List<int> list)
+        {
+            int empty = 4;
+            for (int i = 0; i < 4; ++i)
+            {
+                if (list[i] == 0 && empty == 4)
+                    empty = i;
+                else if (list[i] != 0 && empty != 4) {
+                    list[empty] = list[i];
+                    list[i] = 0;
+                    empty++;
+                }
+            }
+        }
+        
         private void MoveLeft()
         {
             bool moved = false;
@@ -65,9 +81,24 @@ namespace A
                         empty++;
                         moved = true;
                     }
-                        
-                        
                 }
+            }
+            
+            if (moved) {
+                emptyList.Clear();
+                for (int i = 0; i < 4; ++i)
+                {
+                    for (int j = 0; j < 4; ++j)
+                    {
+                        if (board[i, j] == 0)
+                            emptyList.Add(new Tuple<int, int>(i, j));
+                    }
+                }
+                
+                Random randomSeed = new Random();
+                
+                var pair = emptyList[ randomSeed.Next(0, emptyList.Count()) ];
+                board[pair.Item1, pair.Item2] = (randomSeed.Next(0, 2) == 0 ? 2 : 4);
             }
         }
         
@@ -123,15 +154,6 @@ namespace A
         
         private void MoveDown()
         {
-            for (int i = 0; i < 4; ++i)
-            {
-                for (int j = 0; j < 2; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[i, 3 - j];
-                    board[i, 3 - j] = temp;
-                }
-            }
             for (int i = 1; i < 4; ++i)
             {
                 for (int j = 0; j < i; ++j)
@@ -139,20 +161,20 @@ namespace A
                     int temp = board[i, j];
                     board[i, j] = board[j, i];
                     board[j, i] = temp;
+                }
+            }
+            for (int i = 0; i < 4; ++i)
+            {
+                for (int j = 0; j < 2; ++j)
+                {
+                    int temp = board[i, j];
+                    board[i, j] = board[i, 3 - j];
+                    board[i, 3 - j] = temp;
                 }
             }
             
             MoveLeft();
             
-            for (int i = 1; i < 4; ++i)
-            {
-                for (int j = 0; j < i; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[j, i];
-                    board[j, i] = temp;
-                }
-            }
             for (int i = 0; i < 4; ++i)
             {
                 for (int j = 0; j < 2; ++j)
@@ -160,6 +182,15 @@ namespace A
                     int temp = board[i, j];
                     board[i, j] = board[i, 3 - j];
                     board[i, 3 - j] = temp;
+                }
+            }
+            for (int i = 1; i < 4; ++i)
+            {
+                for (int j = 0; j < i; ++j)
+                {
+                    int temp = board[i, j];
+                    board[i, j] = board[j, i];
+                    board[j, i] = temp;
                 }
             }
         }
@@ -171,7 +202,7 @@ namespace A
             {
                 for (int j = 0; j < 4; ++j)
                 {
-                    Console.Write("{0, 7}", board[i, j]);
+                    Console.Write("{0, -7}", board[i, j]);
                 }
                 Console.Write("\n\n");
             }
