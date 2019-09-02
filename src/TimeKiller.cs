@@ -251,6 +251,11 @@ namespace TimeKiller
 
 	class A2048
     {
+		public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\A2048";
+		public const string SAVE_PATH = BASIC_PATH + @"\Save.dat";
+		public const string SCOREBOARD_PATH = BASIC_PATH + @"\ScoreBoard.dat";
+
+
         private int[,] board;
         private int score;
 
@@ -264,8 +269,8 @@ namespace TimeKiller
         
         public void Play()
         {
-			if (File.Exists("Save.dat")) {
-				using (BinaryReader br = new BinaryReader(File.Open("Save.dat", FileMode.Open)))
+			if (File.Exists(SAVE_PATH)) {
+				using (BinaryReader br = new BinaryReader(File.Open(SAVE_PATH, FileMode.Open)))
 				{
 					for (int i = 0; i < 4; ++i)
 					{
@@ -276,6 +281,8 @@ namespace TimeKiller
 					}
 				}
 			}
+			else
+				Directory.CreateDirectory(BASIC_PATH);
 
 
 
@@ -299,7 +306,7 @@ namespace TimeKiller
                 }
 				SaveData();
             }
-			File.Delete("Save.dat");
+			File.Delete(SAVE_PATH);
 			PrintBoard();
 			Console.WriteLine("GAME OVER");
 			Console.ReadKey(true);
@@ -310,7 +317,7 @@ namespace TimeKiller
 
 		private void SaveData()
 		{
-			using (BinaryWriter bw = new BinaryWriter(File.Open("Save.dat", FileMode.OpenOrCreate)))
+			using (BinaryWriter bw = new BinaryWriter(File.Open(SAVE_PATH, FileMode.OpenOrCreate)))
 			{
 				for (int i = 0; i < 4; ++i)
 				{
