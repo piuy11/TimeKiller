@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -7,7 +8,8 @@ namespace A
     class A2048
     {
         private int[,] board;
-        
+        private int score;
+
         public A2048()
         {
             board = new int[4, 4];
@@ -18,6 +20,21 @@ namespace A
         
         public void Play()
         {
+			if (File.Exists("Save.dat")) {
+				using (BinaryReader br = new BinaryReader(File.Open("Save.dat", FileMode.Open)))
+				{
+					for (int i = 0; i < 4; ++i)
+					{
+						for (int j = 0; j < 4; ++j)
+						{
+							board[i, j] = br.ReadInt32();
+						}
+					}
+				}
+			}
+
+
+
             while (CheckIfDead() == false)
             {
                 PrintBoard();
@@ -36,10 +53,30 @@ namespace A
                         MoveRight();
                         break;
                 }
+				SaveData();
             }
+			File.Delete("Save.dat");
+			PrintBoard();
+			Console.WriteLine("GAME OVER");
+			Console.ReadKey(true);
 
-			Console.WriteLine("end");
+			Console.Clear();
+			Console.WriteLine("Your Score : " + score);
         }
+
+		private void SaveData()
+		{
+			using (BinaryWriter bw = new BinaryWriter(File.Open("Save.dat", FileMode.OpenOrCreate)))
+			{
+				for (int i = 0; i < 4; ++i)
+				{
+					for (int j = 0; j < 4; ++j)
+					{
+						bw.Write(board[i, j]);
+					}
+				}
+			}
+		}
 
 		private void GenerateNewBlock()
 		{
@@ -148,6 +185,17 @@ namespace A
         private void PrintBoard()
         {
             Console.Clear();
+
+			score = 0;
+			for (int i = 0; i < 4; ++i)
+            {
+				for (int j = 0; j < 4; ++j)
+				{
+					score += board[i, j];
+				}
+			}
+			Console.WriteLine("score : " + score);
+
             for (int i = 0; i < 4; ++i)
             {
 				for (int j = 0; j < 4; ++j)
@@ -178,6 +226,7 @@ namespace A
 					Console.Write("-");
 				}
 			}
+			Console.WriteLine("|");
         }
 
 		private bool CheckIfDead()
