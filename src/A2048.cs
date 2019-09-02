@@ -18,7 +18,7 @@ namespace A
         
         public void Play()
         {
-            while (true)
+            while (CheckIfDead() == false)
             {
                 PrintBoard();
                 switch (Console.ReadKey(true).Key)
@@ -37,6 +37,8 @@ namespace A
                         break;
                 }
             }
+
+			Console.WriteLine("end");
         }
 
 		private void GenerateNewBlock()
@@ -55,6 +57,31 @@ namespace A
 			Random randomSeed = new Random();
             var pair = emptyList[ randomSeed.Next(0, emptyList.Count()) ];
             board[pair.Item1, pair.Item2] = (randomSeed.Next(0, 2) == 0 ? 2 : 4);
+		}
+
+		private void Swap(ref int a, ref int b)
+		{
+			int temp = a;
+			a = b;
+			b = temp;
+		}
+
+		private void FlipDiagonally()
+		{
+            for (int i = 1; i < 4; ++i)
+            {
+                for (int j = 0; j < i; ++j)
+					Swap(ref board[i, j], ref board[j ,i]);
+            }
+		}
+
+		private void FlipVertically()
+		{
+			for (int i = 0; i < 4; ++i)
+            {
+                for (int j = 0; j < 2; ++j)
+					Swap(ref board[i, j], ref board[i, 3 - j]);
+            }
 		}
         
         private void MoveLeft()
@@ -97,95 +124,25 @@ namespace A
         
         private void MoveRight()
         {
-            for (int i = 0; i < 4; ++i)
-            {
-                for (int j = 0; j < 2; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[i, 3 - j];
-                    board[i, 3 - j] = temp;
-                }
-            }
-            
+			FlipVertically();
             MoveLeft();
-            
-            for (int i = 0; i < 4; ++i)
-            {
-                for (int j = 0; j < 2; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[i, 3 - j];
-                    board[i, 3 - j] = temp;
-                }
-            }
+			FlipVertically();
         }
         
         private void MoveUp()
         {
-            for (int i = 1; i < 4; ++i)
-            {
-                for (int j = 0; j < i; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[j, i];
-                    board[j, i] = temp;
-                }
-            }
-            
+			FlipDiagonally();            
             MoveLeft();
-            
-            for (int i = 1; i < 4; ++i)
-            {
-                for (int j = 0; j < i; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[j, i];
-                    board[j, i] = temp;
-                }
-            }
+			FlipDiagonally();
         }
         
         private void MoveDown()
         {
-            for (int i = 1; i < 4; ++i)
-            {
-                for (int j = 0; j < i; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[j, i];
-                    board[j, i] = temp;
-                }
-            }
-            for (int i = 0; i < 4; ++i)
-            {
-                for (int j = 0; j < 2; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[i, 3 - j];
-                    board[i, 3 - j] = temp;
-                }
-            }
-            
+			FlipDiagonally();
+            FlipVertically();
             MoveLeft();
-            
-            for (int i = 0; i < 4; ++i)
-            {
-                for (int j = 0; j < 2; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[i, 3 - j];
-                    board[i, 3 - j] = temp;
-                }
-            }
-            for (int i = 1; i < 4; ++i)
-            {
-                for (int j = 0; j < i; ++j)
-                {
-                    int temp = board[i, j];
-                    board[i, j] = board[j, i];
-                    board[j, i] = temp;
-                }
-            }
+            FlipVertically();
+			FlipDiagonally();
         }
         
         private void PrintBoard()
@@ -214,14 +171,43 @@ namespace A
             }
 
 			for (int j = 0; j < 4; ++j)
+			{
+				Console.Write("|");
+				for (int k = 0; k < 7; ++k)
 				{
-					Console.Write("|");
-					for (int k = 0; k < 7; ++k)
-					{
-						Console.Write("-");
-					}
+					Console.Write("-");
 				}
+			}
         }
+
+		private bool CheckIfDead()
+		{
+			for (int i = 0; i < 4; ++i)
+			{
+				for (int j = 0; j < 4; ++j)
+				{
+					if (board[i, j] == 0)
+						return false;
+				}
+			}
+
+			for (int i = 0; i < 3; ++i)
+			{
+				for (int j = 0; j < 3; ++j)
+				{
+					if (board[i, j] == board[i, j + 1] || board[i, j] == board[i + 1, j])
+						return false;
+				}
+			}
+
+			for (int i = 0; i < 3; ++i)
+			{
+				if (board[i, 3] == board[i + 1, 3] || board[3, i] == board[3, i + 1])
+					return false;
+			}
+
+			return true;
+		}
     }
     
     class A
