@@ -36,7 +36,7 @@ namespace Trump
         public Rank rank {get;}
         public string name {get;}
 
-        public static char[] SuitChar = {'♠', '♥', '♦', '♣'};
+        public static string[] SuitStr = {"♠", "♥", "♦", "♣"};
         public static string[] RankStr = {
             "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"
         };
@@ -47,7 +47,7 @@ namespace Trump
             this.value = value;
             this.suit = (Suit)(value % 4);
             this.rank = (Rank)(value / 4);
-            this.name = RankStr[(int)this.rank] + SuitChar[(int)this.suit];
+            this.name = RankStr[(int)this.rank] + SuitStr[(int)this.suit];
         }
     }
 
