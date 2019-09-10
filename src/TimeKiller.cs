@@ -9,10 +9,15 @@ namespace TimeKiller
     {
         public const string GAME_VERSION = "test_v1.0";
         public const string BASIC_PATH = @"c:\Program Files\TimeKiller";
+        public const string LOG_PATH = BASIC_PATH + @"\Log.dat";
         
         static void BasicSet()
         {
             Directory.CreateDirectory(BASIC_PATH);
+            if (!File.Exists(LOG_PATH)) {
+                BinaryWriter bw = new BinaryWriter(File.Open(LOG_PATH, FileMode.CreateNew));
+                bw.Close();
+            }
         }
         
         static void Main()
@@ -21,6 +26,7 @@ namespace TimeKiller
             
             while (true)
             {
+                BinaryWriter logger = new BinaryWriter(File.Open(LOG_PATH, FileMode.Append));
                 Console.Clear();
                 Console.WriteLine("심심풀이 " + GAME_VERSION);
                 Console.WriteLine("1. 부자가 되어보자");
@@ -32,23 +38,68 @@ namespace TimeKiller
                 switch(Console.ReadKey(true).KeyChar)
                 {
                     case '1':
+                        logger.Write(DateTime.Now.ToLocalTime().ToString());
+                        logger.Write("부자가 되어보자");
                         BeARich.Game();
+                        logger.Close();
                         break;
                     case '2':
+                        logger.Write(DateTime.Now.ToString());
+                        logger.Write("숫자야구");
                         // NumberBaseBall.Game();
+                        logger.Close();
                         break;
                     case '3':
+                        logger.Write(DateTime.Now.ToString());
+                        logger.Write("로또 추첨기");
                         // Lottery.Game();
+                        logger.Close();
                         break;
                     case '4':
+                        logger.Write(DateTime.Now.ToString());
+                        logger.Write("오목");
                         // Renju.Game();
+                        logger.Close();
                         break;
 					case '5':
+                        logger.Write(DateTime.Now.ToString());
+                        logger.Write("2048");
 						A2048 game = new A2048();
 						game.Play();
+                        logger.Close();
 						break;
+                    case '>':
+                        if (Console.ReadLine() == "power overwhelming") {
+                            logger.Close();
+                            Administrator.Play();
+                        }
+                        break;
                 }
             }
+        }
+    }
+
+    class Administrator
+    {
+        public Administrator()
+        {
+
+        }
+
+        public static void Play()
+        {
+            Console.Clear();
+            try {
+                BinaryReader logReader = new BinaryReader(File.Open(TimeKiller.LOG_PATH, FileMode.Open));
+                while (true)
+                {
+                    Console.Write(logReader.ReadString() + " / ");
+                    Console.WriteLine(logReader.ReadString());
+                }
+            } catch (EndOfStreamException e) {
+                Console.ReadKey(true);
+            }
+            // Console.ReadKey(true);
         }
     }
     
@@ -57,8 +108,8 @@ namespace TimeKiller
         public const long StartMoney = 1000;
         public const string GAME_VERSION = "test_v1.0";
         public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\BeARich";
-        public const string SCOREBOARD_PATH = BASIC_PATH + @"\scoreborad.dat";
-        public const string SAVE_PATH = BASIC_PATH + @"save.dat";
+        public const string SCOREBOARD_PATH = BASIC_PATH + @"\Scoreborad.dat";
+        public const string SAVE_PATH = BASIC_PATH + @"Save.dat";
         public const string PATCH_NOTE = GAME_VERSION + @" 패치 노트
 1. 심심풀이 프로그램에 탑재 완료
 2. 메뉴 추가
@@ -289,6 +340,7 @@ namespace TimeKiller
             while (CheckIfDead() == false)
             {
                 PrintBoard();
+                bool escape = false;
                 switch (Console.ReadKey(true).Key)
                 {
                     case ConsoleKey.UpArrow:
@@ -302,6 +354,9 @@ namespace TimeKiller
                         break;
                     case ConsoleKey.RightArrow:
                         MoveRight();
+                        break;
+                    case ConsoleKey.Escape:
+                        return;
                         break;
                 }
 				SaveData();
