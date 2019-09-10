@@ -19,6 +19,16 @@ namespace TimeKiller
                 bw.Close();
             }
         }
+
+        static void Log(string name)
+        {
+            using ( BinaryWriter logger = new BinaryWriter(File.Open(LOG_PATH, FileMode.Append)) )
+            {
+                // logger.Seek(0, SeekOrigin.Begin);
+                logger.Write(DateTime.Now.ToString());
+                logger.Write(name);
+            }
+        }
         
         static void Main()
         {
@@ -26,7 +36,6 @@ namespace TimeKiller
             
             while (true)
             {
-                BinaryWriter logger = new BinaryWriter(File.Open(LOG_PATH, FileMode.Append));
                 Console.Clear();
                 Console.WriteLine("심심풀이 " + GAME_VERSION);
                 Console.WriteLine("1. 부자가 되어보자");
@@ -38,39 +47,34 @@ namespace TimeKiller
                 switch(Console.ReadKey(true).KeyChar)
                 {
                     case '1':
-                        logger.Write(DateTime.Now.ToLocalTime().ToString());
-                        logger.Write("부자가 되어보자");
+                        Log("부자가 되어보자");
                         BeARich.Game();
-                        logger.Close();
                         break;
                     case '2':
-                        logger.Write(DateTime.Now.ToString());
-                        logger.Write("숫자야구");
+                        Log("숫자야구");
                         // NumberBaseBall.Game();
-                        logger.Close();
                         break;
                     case '3':
-                        logger.Write(DateTime.Now.ToString());
-                        logger.Write("로또 추첨기");
+                        Log("로또 추첨기");
                         // Lottery.Game();
-                        logger.Close();
                         break;
                     case '4':
-                        logger.Write(DateTime.Now.ToString());
-                        logger.Write("오목");
+                        Log("오목");
                         // Renju.Game();
-                        logger.Close();
                         break;
 					case '5':
-                        logger.Write(DateTime.Now.ToString());
-                        logger.Write("2048");
+                        Log("2048");
 						A2048 game = new A2048();
 						game.Play();
-                        logger.Close();
 						break;
+                    case '6':
+                        Log("블랙홀");
+                        // Blackhole game = new Blackhole();
+                        // game.Play();
+                        break;
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
-                            logger.Close();
+                            Log("관리자");
                             Administrator.Play();
                         }
                         break;
@@ -309,12 +313,13 @@ namespace TimeKiller
 
         private int[,] board;
         private int score;
+        private Random randomSeed;
 
         public A2048()
         {
             board = new int[4, 4];
             board.Initialize();
-
+            randomSeed = new Random();
 			GenerateNewBlock();
         }
         
@@ -364,7 +369,15 @@ namespace TimeKiller
 			File.Delete(SAVE_PATH);
 			PrintBoard();
 			Console.WriteLine("GAME OVER");
-			Console.ReadKey(true);
+            Console.ReadKey(true);
+            Console.WriteLine("Press Esc Key to Continue");
+			
+            while (true)
+            {
+                var input = Console.ReadKey(true);
+                if (input.Key == ConsoleKey.Escape)
+                    break;
+            }
 
 			Console.Clear();
 			Console.WriteLine("Your Score : " + score);
@@ -397,7 +410,6 @@ namespace TimeKiller
 				}
 			}
 
-			Random randomSeed = new Random();
             var pair = emptyList[ randomSeed.Next(0, emptyList.Count()) ];
             board[pair.Item1, pair.Item2] = (randomSeed.Next(0, 2) == 0 ? 2 : 4);
 		}
