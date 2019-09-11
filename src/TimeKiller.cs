@@ -62,6 +62,7 @@ namespace TimeKiller
                 Console.WriteLine("3. 로또 추첨기");
                 Console.WriteLine("4. 오목");
 				Console.WriteLine("5. 2048");
+                Console.WriteLine("6. 블랙홀");
                 
                 switch(Console.ReadKey(true).KeyChar)
                 {
@@ -83,13 +84,13 @@ namespace TimeKiller
                         break;
 					case '5':
                         Log("2048");
-						A2048 game = new A2048();
-						game.Play();
+						A2048 game5 = new A2048();
+						game5.Play();
 						break;
                     case '6':
                         Log("블랙홀");
-                        // Blackhole game = new Blackhole();
-                        // game.Play();
+                        Blackhole game6 = new Blackhole();
+                        game6.Play();
                         break;
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
@@ -605,5 +606,21 @@ namespace TimeKiller
 
 			return true;
 		}
+    }
+
+    class Blackhole
+    {
+        public Blackhole()
+        {
+
+        }
+
+        public void Play()
+        {
+            Console.Clear();
+            Trump.Deck deck = new Trump.Deck();
+            deck.PrintDeck();
+            Console.ReadKey(true);
+        }
     }
 }
