@@ -18,15 +18,34 @@ namespace TimeKiller
                 BinaryWriter bw = new BinaryWriter(File.Open(LOG_PATH, FileMode.CreateNew));
                 bw.Close();
             }
+            Log("프로그램 실행");
         }
 
-        static void Log(string name)
+        static void Log(string input)
         {
-            using ( BinaryWriter logger = new BinaryWriter(File.Open(LOG_PATH, FileMode.Append)) )
+            List<string> logs = new List<string>();
+
+            using ( BinaryReader logReader = new BinaryReader(File.Open(LOG_PATH, FileMode.Open)))
             {
-                // logger.Seek(0, SeekOrigin.Begin);
-                logger.Write(DateTime.Now.ToString());
-                logger.Write(name);
+                try {
+                    while (true)
+                    {
+                        logs.Add(logReader.ReadString());
+                    }
+                } catch (EndOfStreamException e) {
+
+                }
+            }
+
+            logs.Insert(0, DateTime.Now.ToString());
+            logs.Insert(1, input);
+
+            using ( BinaryWriter logger = new BinaryWriter(File.Open(LOG_PATH, FileMode.Create)) )
+            {
+                foreach(var str in logs)
+                {
+                    logger.Write(str);
+                }
             }
         }
         
@@ -92,18 +111,29 @@ namespace TimeKiller
 
         public static void Play()
         {
-            Console.Clear();
-            try {
-                BinaryReader logReader = new BinaryReader(File.Open(TimeKiller.LOG_PATH, FileMode.Open));
-                while (true)
-                {
-                    Console.Write(logReader.ReadString() + " / ");
-                    Console.WriteLine(logReader.ReadString());
+            using ( BinaryReader logReader = new BinaryReader(File.Open(TimeKiller.LOG_PATH, FileMode.Open)) )
+            {
+                try {
+                    while (true)
+                    {
+                        Console.Clear();
+                        foreach (var i in Enumerable.Range(0, 10))
+                        {
+                            Console.Write(logReader.ReadString() + " / ");
+                            Console.WriteLine(logReader.ReadString());
+                        }
+                        foreach (var i in Enumerable.Range(0, 20))
+                        {
+                            Console.Write('-');
+                        }
+                        Console.Write('\n');
+                        Console.ReadKey(true);
+                    }
+                } catch (EndOfStreamException e) {
+                    Console.WriteLine("END OF FILE");
+                    Console.ReadKey(true);
                 }
-            } catch (EndOfStreamException e) {
-                Console.ReadKey(true);
             }
-            // Console.ReadKey(true);
         }
     }
     
