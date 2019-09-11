@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.IO;
+using System.Collections.Generic;
 
 namespace Trump
 {
@@ -14,7 +16,6 @@ namespace Trump
     public enum Rank
     {
         A,
-        One,
         Two,
         Three,
         Four,
@@ -36,9 +37,15 @@ namespace Trump
         public Rank rank {get;}
         public string name {get;}
 
-        public static string[] SuitStr = {"♠", "♥", "♦", "♣"};
-        public static string[] RankStr = {
-            "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"
+        public static Dictionary<Suit, string> SuitDic = new Dictionary<Suit, string>(){
+            {Suit.Spade, "♠"}, {Suit.Heart, "♥"}, 
+            {Suit.Diamond, "♦"}, {Suit.Clover, "♣"}
+        };
+        public static Dictionary<Rank, string> RankDic = new Dictionary<Rank, string>(){
+            {Rank.A, "A"}, {Rank.Two, "2"}, {Rank.Three, "3"}, 
+            {Rank.Four, "4"}, {Rank.Five, "5"}, {Rank.Six, "6"}, 
+            {Rank.Seven, "7"}, {Rank.Eight, "8"}, {Rank.Nine, "9"}, 
+            {Rank.Ten, "10"}, {Rank.J, "J"}, {Rank.Q, "Q"}, {Rank.K, "K"}
         };
 
 
@@ -47,7 +54,7 @@ namespace Trump
             this.value = value;
             this.suit = (Suit)(value % 4);
             this.rank = (Rank)(value / 4);
-            this.name = RankStr[(int)this.rank] + SuitStr[(int)this.suit];
+            this.name = RankDic[this.rank] + SuitDic[this.suit];
         }
     }
 
