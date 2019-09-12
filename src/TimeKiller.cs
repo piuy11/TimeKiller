@@ -21,6 +21,13 @@ namespace TimeKiller
             Log("프로그램 실행");
         }
 
+        public static void Swap<T>(ref T a, ref T b)
+        {
+            T temp = a;
+            a = b;
+            b = temp;
+        }
+
         static void Log(string input)
         {
             List<string> logs = new List<string>();
@@ -610,17 +617,72 @@ namespace TimeKiller
 
     class Blackhole
     {
+        private Trump.Card[,] board;
+        private List<Trump.Card> blackhole;
+        private int[] cardLeft;
+
         public Blackhole()
         {
+            board = new Trump.Card[17, 3];
+            blackhole = new List<Trump.Card>();
+            cardLeft = new int[17];
 
+            Trump.Deck deck = new Trump.Deck();
+            foreach (int i in Enumerable.Range(0, 17))
+            {
+                foreach (int j in Enumerable.Range(0, 3))
+                {
+                    Trump.Card card = deck.Pick();
+                    if (card.name == "A♠") {
+                        blackhole.Add(card);
+                        board[i, j] = deck.Pick();
+                    }
+                    else
+                        board[i, j] = card;
+                }
+            }
+            foreach (int i in Enumerable.Range(0, 17))
+            {
+                cardLeft[i] = 3;
+            }
         }
 
         public void Play()
         {
             Console.Clear();
-            Trump.Deck deck = new Trump.Deck();
-            deck.PrintDeck();
-            Console.ReadKey(true);
+            
+            while (true)
+            {
+                Console.Clear();
+                PrintBoard();
+                Console.ReadKey(true);
+            }
+        }
+
+        public void PrintBoard()
+        {
+            foreach (int i in Enumerable.Range(0, 17))
+            {
+                Console.Write("{0, -4}", (char)('A' + i));
+            }
+            Console.Write('\n');
+            foreach (int i in Enumerable.Range(0, 3))
+            {
+                foreach (int j in Enumerable.Range(0, 17))
+                {
+                    if (cardLeft[j] < i - 1)
+                        Console.Write("{0, -4}", ' ');
+                    else
+                        Console.Write("{0, -4}", board[j, i].name);
+                }
+                Console.Write('\n');
+            }
+            Console.WriteLine("Blackhole");
+            foreach (var card in blackhole)
+            {
+                Console.Write("{0, -4}", card.name);
+            }
+            Console.Write('\n');
         }
     }
 }
