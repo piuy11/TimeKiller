@@ -3,6 +3,19 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
+namespace General
+{
+    class General
+    {
+        public static void Swap<T>(ref T a, ref T b)
+        {
+            T temp = a;
+            a = b;
+            b = temp;
+        }
+    }
+}
+
 namespace TimeKiller
 {
     class TimeKiller
@@ -19,13 +32,6 @@ namespace TimeKiller
                 bw.Close();
             }
             Log("프로그램 실행");
-        }
-
-        public static void Swap<T>(ref T a, ref T b)
-        {
-            T temp = a;
-            a = b;
-            b = temp;
         }
 
         static void Log(string input)
@@ -655,7 +661,27 @@ namespace TimeKiller
             {
                 Console.Clear();
                 PrintBoard();
-                Console.ReadKey(true);
+                if (IsDead())
+                    break;
+
+                char input = Console.ReadKey(true).KeyChar;
+
+                if (input >= 'A' && input <= 'Q') {
+                    int index = input - 'A';
+                    if (cardLeft[])
+                }
+            }
+        }
+
+        private bool IsDead()
+        {
+            bool isDead = true;
+            Suit currentSuit = blackhole[blackhole.Count - 1].suit;
+            for (int i in Enumerable.Range(0, 17))
+            {
+                Suit suit = board[i, cardLeft[i] - 1];
+                int diff = Math.Abs(currentSuit - suit);
+                if (diff == 0 || diff == 3)
             }
         }
 
