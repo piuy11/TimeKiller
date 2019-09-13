@@ -3,6 +3,8 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 
+using General;
+
 namespace Trump
 {
     public enum Suit
@@ -60,15 +62,30 @@ namespace Trump
 
     class Deck
     {
-        private Card[] cards;
+        private List<Card> cards, usedCards;
+        private Random randomSeed;
 
         public Deck()
         {
-            cards = new Card[52];
+            cards = new List<Card>();
+            usedCards = new List<Card>();
+            randomSeed = new Random();
+            
             foreach (var i in Enumerable.Range(0, 52))
             {
-                cards[i] = new Card(i);
+                cards.Add(new Card(i));
             }
+        }
+
+        public Card Pick()
+        {
+            if (cards.Count == 0)
+                General.General.Swap(ref cards, ref usedCards);
+
+            int index = randomSeed.Next(0, cards.Count);
+            usedCards.Add(cards[index]);
+            cards.RemoveAt(index);
+            return usedCards[usedCards.Count - 1];
         }
 
         public void PrintDeck()
