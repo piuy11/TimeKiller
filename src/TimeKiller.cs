@@ -666,23 +666,32 @@ namespace TimeKiller
 
                 char input = Console.ReadKey(true).KeyChar;
 
-                if (input >= 'A' && input <= 'Q') {
-                    int index = input - 'A';
-                    if (cardLeft[])
+                if (input >= 'a' && input <= 'q') {
+                    int index = input - 'a';
+                    if (cardLeft[index] == 0)
+                        continue;
+                    Trump.Rank targetRank = blackhole[blackhole.Count - 1].rank;
+                    Trump.Card currentCard = board[index, cardLeft[index] - 1];
+                    Trump.Rank currentRank = currentCard.rank;
+                    if (Trump.Card.IsNearRank(targetRank, currentRank)) {
+                        cardLeft[index]--;
+                        blackhole.Add(currentCard);
+                    }
                 }
             }
         }
 
         private bool IsDead()
         {
-            bool isDead = true;
-            Suit currentSuit = blackhole[blackhole.Count - 1].suit;
-            for (int i in Enumerable.Range(0, 17))
+            Trump.Rank targetRank = blackhole[blackhole.Count - 1].rank;
+            foreach (int i in Enumerable.Range(0, 17))
             {
-                Suit suit = board[i, cardLeft[i] - 1];
-                int diff = Math.Abs(currentSuit - suit);
-                if (diff == 0 || diff == 3)
+                Trump.Rank currentRank = board[i, cardLeft[i] - 1].rank;
+                if (Trump.Card.IsNearRank(targetRank, currentRank))
+                    return false;
             }
+
+            return true;
         }
 
         public void PrintBoard()
@@ -696,7 +705,7 @@ namespace TimeKiller
             {
                 foreach (int j in Enumerable.Range(0, 17))
                 {
-                    if (cardLeft[j] < i - 1)
+                    if (cardLeft[j] < i + 1)
                         Console.Write("{0, -4}", ' ');
                     else
                         Console.Write("{0, -4}", board[j, i].name);
