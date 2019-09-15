@@ -744,11 +744,48 @@ namespace TimeKiller
         {
             foreach (int i in Enumerable.Range(0, 13))
             {
-                foreach (int j in Enumerable.Range(0, 5))
-                    dices[j].Roll();
-                PrintBoard();
-                Console.ReadKey(true);
+                Roll();
+                bool[] b = GetReroll();
             }
+        }
+
+        private void Roll()
+        {
+            foreach (int i in Enumerable.Range(0, 5))
+                dices[i].Roll();
+        }
+
+        private void Roll(bool[] b)
+        {
+            foreach (int i in Enumerable.Range(0, 5))
+            {
+                if (b[i])
+                    dices[i].Roll();
+            }
+        }
+
+        private bool[] GetReroll()
+        {
+            ConsoleKeyInfo input;
+            bool[] b = new bool[5];
+            b.Initialize();
+            do
+            {
+                PrintBoard();
+                foreach (int i in Enumerable.Range(0, 5))
+                    Console.Write("{0, -5}", i + 1);
+                Console.Write('\n');
+                foreach (int i in Enumerable.Range(0, 5))
+                    Console.Write("{0, -5}", b[i] ? "on" : "off");
+                input = Console.ReadKey(true);
+
+                int index = input.KeyChar - '1';
+                b[index] = !b[index];
+
+            } while (input.Key != 
+            ConsoleKey.Enter);
+
+            return b;
         }
 
         private void PrintBoard()
@@ -756,7 +793,7 @@ namespace TimeKiller
             Console.Clear();
             foreach (int i in Enumerable.Range(0, 5))
             {
-                Console.Write(Dice.DiceDic[dices[i].value].ToString() + ' ' + dices[i].value + ' ');
+                Console.Write("{0, -5}", Dice.DiceDic[dices[i].value].ToString() + ' ' + dices[i].value + ' ');
             }
             Console.Write('\n');
         }
