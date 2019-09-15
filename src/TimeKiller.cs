@@ -76,6 +76,7 @@ namespace TimeKiller
                 Console.WriteLine("4. 오목");
 				Console.WriteLine("5. 2048");
                 Console.WriteLine("6. 블랙홀");
+                Console.WriteLine("7. 야찌");
                 
                 switch(Console.ReadKey(true).KeyChar)
                 {
@@ -104,6 +105,11 @@ namespace TimeKiller
                         Log("블랙홀");
                         Blackhole game6 = new Blackhole();
                         game6.Play();
+                        break;
+                    case '7':
+                        Log("야찌");
+                        Yahtzee game7 = new Yahtzee();
+                        game7.Play();
                         break;
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
@@ -623,22 +629,22 @@ namespace TimeKiller
 
     class Blackhole
     {
-        private Trump.Card[,] board;
-        private List<Trump.Card> blackhole;
+        private Card[,] board;
+        private List<Card> blackhole;
         private int[] cardLeft;
 
         public Blackhole()
         {
-            board = new Trump.Card[17, 3];
-            blackhole = new List<Trump.Card>();
+            board = new Card[17, 3];
+            blackhole = new List<Card>();
             cardLeft = new int[17];
 
-            Trump.Deck deck = new Trump.Deck();
+            Deck deck = new Deck();
             foreach (int i in Enumerable.Range(0, 17))
             {
                 foreach (int j in Enumerable.Range(0, 3))
                 {
-                    Trump.Card card = deck.Pick();
+                    Card card = deck.Pick();
                     if (card.name == "A♠") {
                         blackhole.Add(card);
                         board[i, j] = deck.Pick();
@@ -670,10 +676,10 @@ namespace TimeKiller
                     int index = input - 'a';
                     if (cardLeft[index] == 0)
                         continue;
-                    Trump.Rank targetRank = blackhole[blackhole.Count - 1].rank;
-                    Trump.Card currentCard = board[index, cardLeft[index] - 1];
-                    Trump.Rank currentRank = currentCard.rank;
-                    if (Trump.Card.IsNearRank(targetRank, currentRank)) {
+                    Rank targetRank = blackhole[blackhole.Count - 1].rank;
+                    Card currentCard = board[index, cardLeft[index] - 1];
+                    Rank currentRank = currentCard.rank;
+                    if (Card.IsNearRank(targetRank, currentRank)) {
                         cardLeft[index]--;
                         blackhole.Add(currentCard);
                     }
@@ -683,11 +689,11 @@ namespace TimeKiller
 
         private bool IsDead()
         {
-            Trump.Rank targetRank = blackhole[blackhole.Count - 1].rank;
+            Rank targetRank = blackhole[blackhole.Count - 1].rank;
             foreach (int i in Enumerable.Range(0, 17))
             {
-                Trump.Rank currentRank = board[i, cardLeft[i] - 1].rank;
-                if (Trump.Card.IsNearRank(targetRank, currentRank))
+                Rank currentRank = board[i, cardLeft[i] - 1].rank;
+                if (Card.IsNearRank(targetRank, currentRank))
                     return false;
             }
 
@@ -716,6 +722,41 @@ namespace TimeKiller
             foreach (var card in blackhole)
             {
                 Console.Write("{0, -4}", card.name);
+            }
+            Console.Write('\n');
+        }
+    }
+
+    class Yahtzee
+    {
+        private Dice[] dices;
+        public bool isAIMode { get; }
+
+        public Yahtzee(bool b = false)
+        {
+            dices = new Dice[5];
+            foreach (int i in Enumerable.Range(0, 5))
+                dices[i] = new Dice();
+            this.isAIMode = b;
+        }
+
+        public void Play()
+        {
+            foreach (int i in Enumerable.Range(0, 13))
+            {
+                foreach (int j in Enumerable.Range(0, 5))
+                    dices[j].Roll();
+                PrintBoard();
+                Console.ReadKey(true);
+            }
+        }
+
+        private void PrintBoard()
+        {
+            Console.Clear();
+            foreach (int i in Enumerable.Range(0, 5))
+            {
+                Console.Write(Dice.DiceDic[dices[i].value].ToString() + ' ' + dices[i].value + ' ');
             }
             Console.Write('\n');
         }
