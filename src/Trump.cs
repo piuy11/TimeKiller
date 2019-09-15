@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 using General;
 
-namespace Trump
+namespace TimeKiller
 {
     public enum Suit
     {
@@ -58,6 +58,12 @@ namespace Trump
             this.rank = (Rank)(value / 4);
             this.name = RankDic[this.rank] + SuitDic[this.suit];
         }
+
+        public static bool IsNearRank(Rank a, Rank b)
+        {
+            int diff = Math.Abs(a - b);
+            return diff == 1 || diff == 12;
+        }
     }
 
     class Deck
@@ -96,6 +102,26 @@ namespace Trump
             }
         }
     }
+    // ⚀⚁⚂⚃⚄⚅
+    class Dice
+    {
+        private Random randomSeed;
+        public int value { get; private set; }
 
+        public static Dictionary<int, char> DiceDic = new Dictionary<int, char>(){
+            {1, '⚀'}, {2, '⚁'}, {3, '⚂'}, {4, '⚃'}, {5, '⚄'}, {6, '⚅'}, 
+        };
 
+        public Dice()
+        {
+            randomSeed = new Random();
+            Roll();
+        }
+
+        public int Roll()
+        {
+            value = randomSeed.Next(1, 6);
+            return value;
+        }
+    }
 }
