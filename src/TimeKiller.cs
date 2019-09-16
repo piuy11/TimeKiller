@@ -670,10 +670,12 @@ namespace TimeKiller
                 if (IsDead())
                     break;
 
-                char input = Console.ReadKey(true).KeyChar;
-
-                if (input >= 'a' && input <= 'q') {
-                    int index = input - 'a';
+                var input = Console.ReadKey(true);
+                if (input.Key == ConsoleKey.Escape)
+                    return;
+                char inputChar = input.KeyChar;
+                if (inputChar >= 'a' && inputChar <= 'q') {
+                    int index = inputChar - 'a';
                     if (cardLeft[index] == 0)
                         continue;
                     Rank targetRank = blackhole[blackhole.Count - 1].rank;
@@ -745,7 +747,18 @@ namespace TimeKiller
             foreach (int i in Enumerable.Range(0, 13))
             {
                 Roll();
-                bool[] b = GetReroll();
+                int rerollLeft = 2;
+                while (rerollLeft != 0)
+                {
+                    bool[] needReroll = GetReroll(rerollLeft);
+                    if (needReroll.All(b => false))
+                        break;
+                    Roll(needReroll);
+                    --rerollLeft;
+                }
+                PrintBoard();
+                Console.ReadKey(true);
+                
             }
         }
 
@@ -764,36 +777,48 @@ namespace TimeKiller
             }
         }
 
-        private bool[] GetReroll()
+        private bool[] GetReroll(int rerollLeft)
         {
             ConsoleKeyInfo input;
             bool[] b = new bool[5];
             b.Initialize();
-            do
+
+            while (true)
             {
-                PrintBoard();
+                PrintBoard(rerollLeft);
                 foreach (int i in Enumerable.Range(0, 5))
-                    Console.Write("{0, -5}", i + 1);
+                {
+                    if (b[i])
+                        Console.BackgroundColor = ConsoleColor.Yellow;
+                    Console.Write(i + 1);
+                    if (b[i])
+                        Console.ResetColor();
+                    Console.Write("    ");
+                }
+                
                 Console.Write('\n');
-                foreach (int i in Enumerable.Range(0, 5))
-                    Console.Write("{0, -5}", b[i] ? "on" : "off");
                 input = Console.ReadKey(true);
+                if (input.Key == ConsoleKey.Enter)
+                    break;
 
                 int index = input.KeyChar - '1';
                 b[index] = !b[index];
 
-            } while (input.Key != 
-            ConsoleKey.Enter);
+            }
 
             return b;
         }
 
-        private void PrintBoard()
+        private void PrintBoard(int rerollLeft = 0)
         {
             Console.Clear();
+            if (rerollLeft != 0)
+                Console.WriteLine("남은 리롤 횟수 : " + rerollLeft);
             foreach (int i in Enumerable.Range(0, 5))
             {
-                Console.Write("{0, -5}", Dice.DiceDic[dices[i].value].ToString() + ' ' + dices[i].value + ' ');
+
+                Console.Write(Dice.DiceDic[dices[i].value].ToString() + ' ' + dices[i].value + ' ');
+                Console.Write(' ');
             }
             Console.Write('\n');
         }
