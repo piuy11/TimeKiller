@@ -732,6 +732,7 @@ namespace TimeKiller
     class Yahtzee
     {
         private Dice[] dices;
+        private int[] scoreboard;
         public bool isAIMode { get; }
 
         public Yahtzee(bool b = false)
@@ -739,6 +740,8 @@ namespace TimeKiller
             dices = new Dice[5];
             foreach (int i in Enumerable.Range(0, 5))
                 dices[i] = new Dice();
+            scoreboard = new int[13];
+            scoreboard.Initialize();
             this.isAIMode = b;
         }
 
@@ -812,6 +815,17 @@ namespace TimeKiller
         private void PrintBoard(int rerollLeft = 0)
         {
             Console.Clear();
+
+            foreach (int i in Enumerable.Range(1, 6))
+            {
+                foreach (int j in Enumerable.Range(0, 36))
+                    Console.Write('-');
+                Console.WriteLine("\n|{0, -20}|{1, -3}|", "" + i + "이 나온 주사위의 눈의 합", scoreboard[0] == 0 ? " " : scoreboard[0].ToString());
+            }
+            foreach (int j in Enumerable.Range(0, 36))
+                Console.Write('-');
+            Console.Write('\n');
+
             if (rerollLeft != 0)
                 Console.WriteLine("남은 리롤 횟수 : " + rerollLeft);
             foreach (int i in Enumerable.Range(0, 5))
