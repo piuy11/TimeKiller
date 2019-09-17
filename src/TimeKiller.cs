@@ -77,6 +77,7 @@ namespace TimeKiller
 				Console.WriteLine("5. 2048");
                 Console.WriteLine("6. 블랙홀");
                 Console.WriteLine("7. 야찌");
+                Console.WriteLine("8. 게시판");
                 
                 switch(Console.ReadKey(true).KeyChar)
                 {
@@ -111,6 +112,10 @@ namespace TimeKiller
                         Yahtzee game7 = new Yahtzee();
                         game7.Play();
                         break;
+                    case '8':
+                        Log("게시판");
+                        BulletinBoard game8 = new BulletinBoard();
+                        game8.Play();
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
                             Log("관리자");
@@ -824,7 +829,7 @@ namespace TimeKiller
             }
             foreach (int j in Enumerable.Range(0, 36))
                 Console.Write('-');
-            Console.Write('\n');
+            Console.Write("\n\n");
 
             if (rerollLeft != 0)
                 Console.WriteLine("남은 리롤 횟수 : " + rerollLeft);
@@ -835,6 +840,71 @@ namespace TimeKiller
                 Console.Write(' ');
             }
             Console.Write('\n');
+        }
+    }
+
+    class BulletinBoard
+    {
+        public static readonly string BASIC_PATH = @"\BulletinBoard";
+        public static readonly string BOARD_PATH = BASIC_PATH + @"\Board.dat";
+
+        private Dictionary<int, Post> board;
+
+        public BulletinBoard()
+        {
+            if (!File.Exists(BOARD_PATH)) {
+                BinaryWriter bw = new BinaryWriter(File.Open(BOARD_PATH, FileMode.CreateNew));
+                bw.Close();
+            }
+            else {
+                using (BinaryReader br = new BinaryReader(File.Open(BOARD_PATH, FileMode.Open)))
+                {
+                    try {
+                        while (true)
+                        {
+                            int index = br.ReadInt32();
+                            bool isHidden = br.ReadBoolean();
+                            string name = br.ReadString();
+                            string content = br.ReadString();
+                            string password = br.ReadString();
+                            board[index] = new Post(index, isHidden, name, content, password);
+                        }
+                    } catch (EndOfStreamException e)
+                    {
+
+                    }
+                }
+            }
+        }
+
+
+        public void Play()
+        {
+            while (true)
+            {
+                try {
+                    Console.Clear();
+                    foreach (var i in Enumerable.Range(0, 10))
+                    {
+                        Console.Write(logReader.ReadString() + " / ");
+                        Console.WriteLine(logReader.ReadString());
+                    }
+                    foreach (var i in Enumerable.Range(0, 20))
+                    {
+                        Console.Write('-');
+                    }
+                    Console.Write('\n');
+                    Console.ReadKey(true);
+                } catch (EndOfStreamException e) {
+                Console.WriteLine("END OF FILE");
+                Console.ReadKey(true);
+                }
+            }
+        }
+
+        public void Write()
+        {
+
         }
     }
 }
