@@ -124,4 +124,29 @@ namespace TimeKiller
             return value;
         }
     }
+
+    class Post
+    {
+        public int index { get; private set; }
+        public bool isHidden { get; private set; }
+        public string name { get; private set; }
+        public string content { get; private set; }
+        public string password { get; private set; }
+        public List<Comment> comments { get; private set; }
+
+        public Post(int index, bool isHidden, stirng name, string content, string password, List<Comment> comments)
+        {
+            this.index = index;
+            this.isHidden = isHidden;
+            this.name = name;
+            this.content = content;
+            this.password = password;
+            this.comments = comments;
+        }
+    }
+
+    class Comment
+    {
+
+    }
 }
