@@ -77,7 +77,7 @@ namespace TimeKiller
 				Console.WriteLine("5. 2048");
                 Console.WriteLine("6. 블랙홀");
                 Console.WriteLine("7. 야찌");
-                Console.WriteLine("8. 게시판");
+                // Console.WriteLine("8. 게시판");
                 
                 switch(Console.ReadKey(true).KeyChar)
                 {
@@ -112,10 +112,12 @@ namespace TimeKiller
                         Yahtzee game7 = new Yahtzee();
                         game7.Play();
                         break;
+                    /*
                     case '8':
                         Log("게시판");
                         BulletinBoard game8 = new BulletinBoard();
                         game8.Play();
+                    */
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
                             Log("관리자");
@@ -738,16 +740,41 @@ namespace TimeKiller
     {
         private Dice[] dices;
         private int[] scoreboard;
+        private bool[] isScored;
         public bool isAIMode { get; }
+        private string[] scoreboardInfo;
 
         public Yahtzee(bool b = false)
         {
             dices = new Dice[5];
-            foreach (int i in Enumerable.Range(0, 5))
+            foreach (int i in Enumerable.Range(0, dices.Length))
                 dices[i] = new Dice();
-            scoreboard = new int[13];
+
+            scoreboard = new int[16];
             scoreboard.Initialize();
+            isScored = new bool[16];
+            isScored.Initialize();
+            isScored[6] = isScored[7] = isScored[15] = true;
+            
             this.isAIMode = b;
+            scoreboardInfo = new string[16] {
+                "Sum Of All 1",
+                "Sum Of All 2",
+                "Sum Of All 3",
+                "Sum Of All 4",
+                "Sum Of All 5",
+                "Sum Of All 6",
+                "Total Above",
+                "+35 If Total Above >= 63",
+                "3 Of A Kind",
+                "4 Of A Kind",
+                "Full House",
+                "Small Straight",
+                "Large Straight",
+                "Yahtzee",
+                "Bonus(Sum Of All Dices)",
+                "Total Score"
+            };
         }
 
         public void Play()
@@ -772,13 +799,13 @@ namespace TimeKiller
 
         private void Roll()
         {
-            foreach (int i in Enumerable.Range(0, 5))
+            foreach (int i in Enumerable.Range(0, dices.Length))
                 dices[i].Roll();
         }
 
         private void Roll(bool[] b)
         {
-            foreach (int i in Enumerable.Range(0, 5))
+            foreach (int i in Enumerable.Range(0, dices.Length))
             {
                 if (b[i])
                     dices[i].Roll();
@@ -788,13 +815,13 @@ namespace TimeKiller
         private bool[] GetReroll(int rerollLeft)
         {
             ConsoleKeyInfo input;
-            bool[] b = new bool[5];
+            bool[] b = new bool[dices.Length];
             b.Initialize();
 
             while (true)
             {
                 PrintBoard(rerollLeft);
-                foreach (int i in Enumerable.Range(0, 5))
+                foreach (int i in Enumerable.Range(0, b.Length))
                 {
                     if (b[i])
                         Console.BackgroundColor = ConsoleColor.Yellow;
@@ -817,32 +844,59 @@ namespace TimeKiller
             return b;
         }
 
+        private void WriteALine(char character = '-', int num = 39)
+        {
+            foreach (int i in Enumerable.Range(0, num))
+                Console.Write(character);
+            Console.Write('\n');
+        }
+
+        private string PrintScore(int score)
+        {
+            return score == -1 ? " " : score.ToString();
+        }
+
         private void PrintBoard(int rerollLeft = 0)
         {
+            scoreboard[6] = 0;
+            foreach (int i in Enumerable.Range(0, 5))
+                scoreboard[6] += scoreboard[i];
+            if (scoreboard[6] >= 63)
+                scoreboard[7] = 35;
+            scoreboard[15] = 0;
+            foreach (int i in Enumerable.Range(6, 9))
+                scoreboard[15] += scoreboard[i];
+
             Console.Clear();
 
-            foreach (int i in Enumerable.Range(1, 6))
+            WriteALine('=');
+            Console.WriteLine("|  |{0, -28}|{1}|", "HOW TO SCORE", "SCORE");
+            WriteALine('=');
+            foreach (int i in Enumerable.Range(0, 16))
             {
-                foreach (int j in Enumerable.Range(0, 36))
-                    Console.Write('-');
-                Console.WriteLine("\n|{0, -20}|{1, -3}|", "" + i + "이 나온 주사위의 눈의 합", scoreboard[0] == 0 ? " " : scoreboard[0].ToString());
+                if (i == 6 || i == 7 || i == )
+                Console.WriteLine("|{0}|{1, -28}|{2, -5}|", i + 1, " " + scoreboardInfo[i], isScored[i] ? scoreboard[i].ToString() : " " );
+                if (i == 5 || i == 6 || i == 7 || i == 14 || i == 15)
+                    WriteALine('=');
+                else
+                    WriteALine();
             }
-            foreach (int j in Enumerable.Range(0, 36))
-                Console.Write('-');
-            Console.Write("\n\n");
+            Console.Write("\n");
 
             if (rerollLeft != 0)
                 Console.WriteLine("남은 리롤 횟수 : " + rerollLeft);
+            else
+                Console.Write('\n');
             foreach (int i in Enumerable.Range(0, 5))
             {
 
                 Console.Write(Dice.DiceDic[dices[i].value].ToString() + ' ' + dices[i].value + ' ');
                 Console.Write(' ');
             }
-            Console.Write('\n');
+            Console.Write("\n");
         }
     }
-
+    /*
     class BulletinBoard
     {
         public static readonly string BASIC_PATH = @"\BulletinBoard";
@@ -907,4 +961,5 @@ namespace TimeKiller
 
         }
     }
+    */
 }
