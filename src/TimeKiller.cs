@@ -791,10 +791,22 @@ namespace TimeKiller
                     Roll(needReroll);
                     --rerollLeft;
                 }
-                PrintBoard();
-                Console.ReadKey(true);
+                while (true) // choose valid
+                {
+                    PrintBoard();
+                    Console.WriteLine("주사위 값을 넣을 곳을 선택해 주세요. (A ~ M)");
+                    
+                    char choice = Console.ReadKey(true).KeyChar;
+                    if (Char.IsUpper(choice) == false)
+                        choice = Char.ToUpper(choice);
+                }
+                
+                
                 
             }
+
+            Console.WriteLine("Your score : ");
+            // TimeKiller.PAK();
         }
 
         private void Roll()
@@ -870,17 +882,31 @@ namespace TimeKiller
             Console.Clear();
 
             WriteALine('=');
-            Console.WriteLine("|  |{0, -28}|{1}|", "HOW TO SCORE", "SCORE");
+            Console.WriteLine("|   {0, -28}|{1}|", "HOW TO SCORE", "SCORE");
             WriteALine('=');
-            foreach (int i in Enumerable.Range(0, 16))
+
+            foreach (int i in Enumerable.Range(0, 6))
             {
-                if (i == 6 || i == 7 || i == )
-                Console.WriteLine("|{0}|{1, -28}|{2, -5}|", i + 1, " " + scoreboardInfo[i], isScored[i] ? scoreboard[i].ToString() : " " );
-                if (i == 5 || i == 6 || i == 7 || i == 14 || i == 15)
+                Console.WriteLine("|{0}|{1, -29}|{2, -5}|", (char)(i + 'A'), " " + scoreboardInfo[i], isScored[i] ? scoreboard[i].ToString() : " " );
+                if (i == 5)
                     WriteALine('=');
                 else
                     WriteALine();
             }
+            Console.WriteLine("|  {0, -29}|{1, -5}|", " " + scoreboardInfo[6], isScored[6] ? scoreboard[6].ToString() : " " );
+            WriteALine('=');
+            Console.WriteLine("|  {0, -29}|{1, -5}|", " " + scoreboardInfo[7], isScored[7] ? scoreboard[7].ToString() : " " );
+            WriteALine('=');
+            foreach (int i in Enumerable.Range(8, 7))
+            {
+                Console.WriteLine("|{0}|{1, -29}|{2, -5}|", (char)(i +'A' - 2), " " + scoreboardInfo[i], isScored[i] ? scoreboard[i].ToString() : " " );
+                if (i == 14)
+                    WriteALine('=');
+                else
+                    WriteALine();
+            }
+            Console.WriteLine("|  {0, -29}|{1, -5}|", " " + scoreboardInfo[15], isScored[15] ? scoreboard[15].ToString() : " " );
+            WriteALine('=');
             Console.Write("\n");
 
             if (rerollLeft != 0)
