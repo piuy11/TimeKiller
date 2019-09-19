@@ -124,7 +124,7 @@ namespace TimeKiller
             return value;
         }
     }
-
+    /*
     class Post
     {
         public int index { get; private set; }
@@ -149,4 +149,5 @@ namespace TimeKiller
     {
 
     }
+    */
 }
