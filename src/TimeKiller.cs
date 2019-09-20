@@ -843,7 +843,22 @@ namespace TimeKiller
                             score = isValid3 ? 25 : 0;
                             break;
                         case 11:
-                            
+                            dices.OrderBy(dice => dice.value);
+                            bool isValid4 = true;
+                            bool chanceUsed = false;
+                            int before = dices[0].value;
+                            foreach (int j in Enumerable.Range(1, 4))
+                            {
+                                if (dices[j].value != before) {
+                                    if (!chanceUsed)
+                                        chanceUsed = true;
+                                    else {
+                                        isValid4 = false;
+                                        break;
+                                    }
+                                } else
+                                    before = dices[i].value;
+                            }
                             score = isValid4 ? 30 : 0;
                             break;
                         case 12:
@@ -1006,3 +1021,5 @@ namespace TimeKiller
         }
     }
 }
+
+// TODO : 카드게임들, 스도쿠제작기
