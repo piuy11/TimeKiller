@@ -796,9 +796,59 @@ namespace TimeKiller
                     PrintBoard();
                     Console.WriteLine("주사위 값을 넣을 곳을 선택해 주세요. (A ~ M)");
                     
-                    char choice = Console.ReadKey(true).KeyChar;
-                    if (Char.IsUpper(choice) == false)
-                        choice = Char.ToUpper(choice);
+                    char choice = Char.ToUpper(Console.ReadKey(true).KeyChar);
+                    int index = (choice <= 'F') ? choice - 'A' : choice - 'C';
+                    if (index < 0 || index > 16)
+                        continue;
+                    else if (isScored[index])
+                        continue;
+                    
+                    int score = 0;
+                    if (index < 6)
+                        score = dices.Count(dice => dice.value == index + 1) * (index + 1);
+                    else {
+                        switch (index)
+                        {
+                        case 6:
+                        case 7:
+                            continue;
+                        case 8:
+                            int[] numCount1 = new int[6];
+                            numCount1.Initialize();
+                            foreach (var dice in dices)
+                            {
+                                numCount1[dice.value - 1]++;
+                            }
+                            bool isValid1 = numCount1.Any(num => num >= 3);
+                            score = isValid1 ? dices.Sum(dice => dice.value) : 0;
+                            break;
+                        case 9:
+                            int[] numCount2 = new int[6];
+                            numCount2.Initialize();
+                            foreach (var dice in dices)
+                            {
+                                numCount2[dice.value - 1]++;
+                            }
+                            bool isValid2 = numCount2.Any(num => num >= 4);
+                            score = isValid2 ? dices.Sum(dice => dice.value) : 0;
+                            break;
+                        case 10:
+                            int[] numCount3 = new int[6];
+                            numCount3.Initialize();
+                            foreach (var dice in dices)
+                            {
+                                numCount3[dice.value - 1]++;
+                            }
+                            bool isValid3 = numCount3.Any(num => num == 3) && numCount3.Any(num => num == 2);
+                            score = isValid3 ? 25 : 0;
+                            break;
+                        }
+                    }
+
+                    Console.WriteLine("{0}점을 받습니다. 계속 하시겠습니까?(Y to continue)", score);
+                    var input = Char.ToUpper(Console.ReadKey(true).KeyChar);
+                    if (input == 'Y')
+                        break;
                 }
                 
                 
@@ -868,7 +918,7 @@ namespace TimeKiller
             return score == -1 ? " " : score.ToString();
         }
 
-        private void PrintBoard(int rerollLeft = 0)
+        private void RefreshBoard()
         {
             scoreboard[6] = 0;
             foreach (int i in Enumerable.Range(0, 5))
@@ -878,7 +928,11 @@ namespace TimeKiller
             scoreboard[15] = 0;
             foreach (int i in Enumerable.Range(6, 9))
                 scoreboard[15] += scoreboard[i];
+        }
 
+        private void PrintBoard(int rerollLeft = 0)
+        {
+            RefreshBoard();
             Console.Clear();
 
             WriteALine('=');
@@ -909,10 +963,14 @@ namespace TimeKiller
             WriteALine('=');
             Console.Write("\n");
 
-            if (rerollLeft != 0)
+            if (rerollLeft > 0)
                 Console.WriteLine("남은 리롤 횟수 : " + rerollLeft);
             else
                 Console.Write('\n');
+            
+            if (rerollLeft < 0)
+                return;
+            
             foreach (int i in Enumerable.Range(0, 5))
             {
 
@@ -922,70 +980,4 @@ namespace TimeKiller
             Console.Write("\n");
         }
     }
-    /*
-    class BulletinBoard
-    {
-        public static readonly string BASIC_PATH = @"\BulletinBoard";
-        public static readonly string BOARD_PATH = BASIC_PATH + @"\Board.dat";
-
-        private Dictionary<int, Post> board;
-
-        public BulletinBoard()
-        {
-            if (!File.Exists(BOARD_PATH)) {
-                BinaryWriter bw = new BinaryWriter(File.Open(BOARD_PATH, FileMode.CreateNew));
-                bw.Close();
-            }
-            else {
-                using (BinaryReader br = new BinaryReader(File.Open(BOARD_PATH, FileMode.Open)))
-                {
-                    try {
-                        while (true)
-                        {
-                            int index = br.ReadInt32();
-                            bool isHidden = br.ReadBoolean();
-                            string name = br.ReadString();
-                            string content = br.ReadString();
-                            string password = br.ReadString();
-                            board[index] = new Post(index, isHidden, name, content, password);
-                        }
-                    } catch (EndOfStreamException e)
-                    {
-
-                    }
-                }
-            }
-        }
-
-
-        public void Play()
-        {
-            while (true)
-            {
-                try {
-                    Console.Clear();
-                    foreach (var i in Enumerable.Range(0, 10))
-                    {
-                        Console.Write(logReader.ReadString() + " / ");
-                        Console.WriteLine(logReader.ReadString());
-                    }
-                    foreach (var i in Enumerable.Range(0, 20))
-                    {
-                        Console.Write('-');
-                    }
-                    Console.Write('\n');
-                    Console.ReadKey(true);
-                } catch (EndOfStreamException e) {
-                Console.WriteLine("END OF FILE");
-                Console.ReadKey(true);
-                }
-            }
-        }
-
-        public void Write()
-        {
-
-        }
-    }
-    */
 }
