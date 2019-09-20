@@ -766,13 +766,13 @@ namespace TimeKiller
                 "Sum Of All 6",
                 "Total Above",
                 "+35 If Total Above >= 63",
-                "3 Of A Kind",
-                "4 Of A Kind",
-                "Full House",
-                "Small Straight",
-                "Large Straight",
-                "Yahtzee",
-                "Bonus(Sum Of All Dices)",
+                "3 Of A Kind (Sum Of All)",
+                "4 Of A Kind (Sum Of All)",
+                "Full House (+25)",
+                "Small Straight (+30)",
+                "Large Straight(+40)",
+                "Yahtzee(+50)",
+                "Bonus (Sum Of All)",
                 "Total Score"
             };
         }
@@ -797,7 +797,7 @@ namespace TimeKiller
                     Console.WriteLine("주사위 값을 넣을 곳을 선택해 주세요. (A ~ M)");
                     
                     char choice = Char.ToUpper(Console.ReadKey(true).KeyChar);
-                    int index = (choice <= 'F') ? choice - 'A' : choice - 'C';
+                    int index = (choice <= 'F') ? choice - 'A' : choice - 'A' + 2;
                     if (index < 0 || index > 16)
                         continue;
                     else if (isScored[index])
@@ -842,13 +842,38 @@ namespace TimeKiller
                             bool isValid3 = numCount3.Any(num => num == 3) && numCount3.Any(num => num == 2);
                             score = isValid3 ? 25 : 0;
                             break;
+                        case 11:
+                            
+                            score = isValid4 ? 30 : 0;
+                            break;
+                        case 12:
+                            dices.OrderBy(dice => dice.value);
+                            bool isValid5 = true;
+                            foreach (int j in Enumerable.Range(1, 4))
+                            {
+                                if (dices[j].value != dices[j - 1].value + 1) {
+                                    isValid5 = false;
+                                    break;
+                                }
+                            }
+                            score = isValid5 ? 40 : 0;
+                            break;
+                        case 13:
+                            score = dices.All(dice => dice.value == dices[0].value) ? 50 : 0; 
+                            break;
+                        case 14:
+                            score = dices.Sum(dice => dice.value);
+                            break;
                         }
                     }
 
                     Console.WriteLine("{0}점을 받습니다. 계속 하시겠습니까?(Y to continue)", score);
                     var input = Char.ToUpper(Console.ReadKey(true).KeyChar);
-                    if (input == 'Y')
+                    if (input == 'Y') {
+                        scoreboard[index] = score;
+                        isScored[index] = true;
                         break;
+                    }
                 }
                 
                 
