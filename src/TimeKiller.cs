@@ -812,7 +812,7 @@ namespace TimeKiller
                         case 6:
                         case 7:
                             continue;
-                        case 8:
+                        case 8: // 3 of a kind
                             int[] numCount1 = new int[6];
                             numCount1.Initialize();
                             foreach (var dice in dices)
@@ -822,7 +822,7 @@ namespace TimeKiller
                             bool isValid1 = numCount1.Any(num => num >= 3);
                             score = isValid1 ? dices.Sum(dice => dice.value) : 0;
                             break;
-                        case 9:
+                        case 9: // 4 of a kind
                             int[] numCount2 = new int[6];
                             numCount2.Initialize();
                             foreach (var dice in dices)
@@ -832,7 +832,7 @@ namespace TimeKiller
                             bool isValid2 = numCount2.Any(num => num >= 4);
                             score = isValid2 ? dices.Sum(dice => dice.value) : 0;
                             break;
-                        case 10:
+                        case 10: // full house
                             int[] numCount3 = new int[6];
                             numCount3.Initialize();
                             foreach (var dice in dices)
@@ -842,14 +842,14 @@ namespace TimeKiller
                             bool isValid3 = numCount3.Any(num => num == 3) && numCount3.Any(num => num == 2);
                             score = isValid3 ? 25 : 0;
                             break;
-                        case 11:
-                            dices.OrderBy(dice => dice.value);
+                        case 11: // small straight
+                            Array.Sort(dices);
                             bool isValid4 = true;
                             bool chanceUsed = false;
                             int before = dices[0].value;
                             foreach (int j in Enumerable.Range(1, 4))
                             {
-                                if (dices[j].value != before) {
+                                if (dices[j].value != before + 1) {
                                     if (!chanceUsed)
                                         chanceUsed = true;
                                     else {
@@ -857,12 +857,12 @@ namespace TimeKiller
                                         break;
                                     }
                                 } else
-                                    before = dices[i].value;
+                                    before = dices[j].value;
                             }
                             score = isValid4 ? 30 : 0;
                             break;
-                        case 12:
-                            dices.OrderBy(dice => dice.value);
+                        case 12: // large straight
+                            Array.Sort(dices);
                             bool isValid5 = true;
                             foreach (int j in Enumerable.Range(1, 4))
                             {
@@ -873,10 +873,10 @@ namespace TimeKiller
                             }
                             score = isValid5 ? 40 : 0;
                             break;
-                        case 13:
+                        case 13: // yahtzee
                             score = dices.All(dice => dice.value == dices[0].value) ? 50 : 0; 
                             break;
-                        case 14:
+                        case 14: // bonus
                             score = dices.Sum(dice => dice.value);
                             break;
                         }
@@ -894,9 +894,9 @@ namespace TimeKiller
                 
                 
             }
-
-            Console.WriteLine("Your score : ");
-            // TimeKiller.PAK();
+            PrintBoard(-1);
+            Console.WriteLine("Your score : " + scoreboard[15]);
+            Console.ReadKey(true);
         }
 
         private void Roll()
@@ -937,6 +937,8 @@ namespace TimeKiller
                 input = Console.ReadKey(true);
                 if (input.Key == ConsoleKey.Enter)
                     break;
+                else if ( (input.KeyChar >= '1' && input.KeyChar <= '5') == false)
+                    continue; 
 
                 int index = input.KeyChar - '1';
                 b[index] = !b[index];
@@ -961,7 +963,7 @@ namespace TimeKiller
         private void RefreshBoard()
         {
             scoreboard[6] = 0;
-            foreach (int i in Enumerable.Range(0, 5))
+            foreach (int i in Enumerable.Range(0, 6))
                 scoreboard[6] += scoreboard[i];
             if (scoreboard[6] >= 63)
                 scoreboard[7] = 35;
