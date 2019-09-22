@@ -120,8 +120,19 @@ namespace TimeKiller
 
         public int Roll()
         {
-            value = randomSeed.Next(1, 6);
+            value = randomSeed.Next(1, 7);
             return value;
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj == null) return 1;
+        
+            Dice other = obj as Dice;
+            if (other != null) 
+                return this.value.CompareTo(other.value);
+            else
+                throw new ArgumentException("Object is not a Dice");
         }
     }
     /*
