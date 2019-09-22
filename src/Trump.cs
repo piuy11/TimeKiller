@@ -103,7 +103,7 @@ namespace TimeKiller
         }
     }
     // ⚀⚁⚂⚃⚄⚅
-    class Dice
+    class Dice : Icomparable
     {
         private Random randomSeed;
         public int value { get; private set; }
