@@ -742,7 +742,43 @@ namespace TimeKiller
         private int[] scoreboard;
         private bool[] isScored;
         public bool isAIMode { get; }
-        private string[] scoreboardInfo;
+        private const string scoreboardFrame = @"
+=======================================
+|선택  점수    설명
+=======================================
+| A  |     | 주사위 1 합
+---------------------------------------
+| B  |     | 주사위 2 합
+---------------------------------------
+| C  |     | 주사위 3 합
+---------------------------------------
+| D  |     | 주사위 4 합
+---------------------------------------
+| E  |     | 주사위 5 합
+---------------------------------------
+| F  |     | 주사위 6 합
+=======================================
+|    |     | 여기까지 총합
+=======================================
+|    |     | 여기까지 총합 >= 63이면 +35
+=======================================
+| G  |     | 트리플 (모든 주사위 합)
+---------------------------------------
+| H  |     | 포카드 (모든 주사위 합)
+---------------------------------------
+| I  |     | 풀하우스 (+25)
+---------------------------------------
+| J  |     | 스몰 스트레이트 (+30)
+---------------------------------------
+| K  |     | 라지 스트레이트 (+40)
+---------------------------------------
+| L  |     | 야찌 (+50)
+---------------------------------------
+| M  |     | 보너스 (모든 주사위 합)
+=======================================
+|    |     | 총합
+=======================================
+";
 
         public Yahtzee(bool b = false)
         {
@@ -757,24 +793,6 @@ namespace TimeKiller
             isScored[6] = isScored[7] = isScored[15] = true;
             
             this.isAIMode = b;
-            scoreboardInfo = new string[16] {
-                "Sum Of All 1",
-                "Sum Of All 2",
-                "Sum Of All 3",
-                "Sum Of All 4",
-                "Sum Of All 5",
-                "Sum Of All 6",
-                "Total Above",
-                "+35 If Total Above >= 63",
-                "3 Of A Kind (Sum Of All)",
-                "4 Of A Kind (Sum Of All)",
-                "Full House (+25)",
-                "Small Straight (+30)",
-                "Large Straight(+40)",
-                "Yahtzee(+50)",
-                "Bonus (Sum Of All)",
-                "Total Score"
-            };
         }
 
         public void Play()
@@ -955,11 +973,6 @@ namespace TimeKiller
             Console.Write('\n');
         }
 
-        private string PrintScore(int score)
-        {
-            return score == -1 ? " " : score.ToString();
-        }
-
         private void RefreshBoard()
         {
             scoreboard[6] = 0;
@@ -977,36 +990,19 @@ namespace TimeKiller
             RefreshBoard();
             Console.Clear();
 
-            WriteALine('=');
-            Console.WriteLine("|   {0, -28}|{1}|", "HOW TO SCORE", "SCORE");
-            WriteALine('=');
-
-            foreach (int i in Enumerable.Range(0, 6))
+            Console.Write(scoreboardFrame);
+            int left = Console.CursorLeft, top = Console.CursorTop;
+            for (int i = 0; i < scoreboard.Length; ++i)
             {
-                Console.WriteLine("|{0}|{1, -29}|{2, -5}|", (char)(i + 'A'), " " + scoreboardInfo[i], isScored[i] ? scoreboard[i].ToString() : " " );
-                if (i == 5)
-                    WriteALine('=');
-                else
-                    WriteALine();
+                Console.SetCursorPosition(7, 4 + i * 2);
+                if (isScored[i])
+                    Console.Write(scoreboard[i]);
             }
-            Console.WriteLine("|  {0, -29}|{1, -5}|", " " + scoreboardInfo[6], isScored[6] ? scoreboard[6].ToString() : " " );
-            WriteALine('=');
-            Console.WriteLine("|  {0, -29}|{1, -5}|", " " + scoreboardInfo[7], isScored[7] ? scoreboard[7].ToString() : " " );
-            WriteALine('=');
-            foreach (int i in Enumerable.Range(8, 7))
-            {
-                Console.WriteLine("|{0}|{1, -29}|{2, -5}|", (char)(i +'A' - 2), " " + scoreboardInfo[i], isScored[i] ? scoreboard[i].ToString() : " " );
-                if (i == 14)
-                    WriteALine('=');
-                else
-                    WriteALine();
-            }
-            Console.WriteLine("|  {0, -29}|{1, -5}|", " " + scoreboardInfo[15], isScored[15] ? scoreboard[15].ToString() : " " );
-            WriteALine('=');
-            Console.Write("\n");
+            Console.CursorLeft = left;
+            Console.CursorTop = top;
 
             if (rerollLeft > 0)
-                Console.WriteLine("남은 리롤 횟수 : " + rerollLeft);
+                Console.WriteLine("\n남은 리롤 횟수 : " + rerollLeft);
             else
                 Console.Write('\n');
             
