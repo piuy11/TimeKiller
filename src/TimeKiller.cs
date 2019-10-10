@@ -23,6 +23,12 @@ namespace TimeKiller
         public const string GAME_VERSION = "test_v1.0";
         public const string BASIC_PATH = @"c:\Program Files\TimeKiller";
         public const string LOG_PATH = BASIC_PATH + @"\Log.dat";
+
+        public static void Continue()
+        {
+            Console.WriteLine("계속 하려면 아무 키를 눌러 주세요.");
+            Console.ReadKey(true);
+        }
         
         static void BasicSet()
         {
@@ -45,7 +51,7 @@ namespace TimeKiller
                     {
                         logs.Add(logReader.ReadString());
                     }
-                } catch (EndOfStreamException e) {
+                } catch (EndOfStreamException) {
 
                 }
             }
@@ -83,7 +89,7 @@ namespace TimeKiller
                 {
                     case '1':
                         Log("부자가 되어보자");
-                        BeARich.Game();
+                        BeARich.Play();
                         break;
                     case '2':
                         Log("숫자야구");
@@ -109,8 +115,8 @@ namespace TimeKiller
                         break;
                     case '7':
                         Log("야찌");
-                        Yahtzee game7 = new Yahtzee();
-                        game7.Play();
+                        Game yahtzee = new Yahtzee();
+                        yahtzee.Menu();
                         break;
                     /*
                     case '8':
@@ -125,6 +131,140 @@ namespace TimeKiller
                         }
                         break;
                 }
+            }
+        }
+    }
+
+    abstract class Game
+    {
+        public virtual void Menu()
+        {
+            ConsoleKeyInfo input;
+            do {
+                Console.Clear();
+                Console.WriteLine("1. 게임 시작");
+                Console.WriteLine("2. 게임 설명");
+                Console.WriteLine("Esc 키를 눌러 나갑니다.");
+                input = Console.ReadKey(true);
+
+                if (input.KeyChar == '1')
+                    Play();
+                else if (input.KeyChar == '2')
+                    Description();
+            } while (input.Key != ConsoleKey.Escape);
+        }
+
+        protected abstract int Play();
+
+        protected virtual void Description()
+        {
+            Console.Clear();
+            Console.WriteLine("게임 설명이 없습니다..");
+            TimeKiller.Continue();
+        }
+    }
+
+    abstract class GameWithScoreBoard : Game
+    {
+        Tuple<string, long>[] allTimeScores, monthlyScores;
+
+        public override void Menu()
+        {
+            FirstSet();
+            
+            ConsoleKeyInfo input;
+            do {
+                Console.Clear();
+                Console.WriteLine("1. 게임 시작");
+                Console.WriteLine("2. 게임 설명");
+                Console.WriteLine("3. 점수판");
+                Console.WriteLine("Esc 키를 눌러 나갑니다.");
+                input = Console.ReadKey(true);
+
+                if (input.KeyChar == '1') {
+                    int score = Play();
+                    // score something
+                }
+                else if (input.KeyChar == '2')
+                    Description();
+                else if (input.KeyChar == '3')
+                    ShowScoreBoard();
+            } while (input.Key != ConsoleKey.Escape);
+            
+        }
+
+        protected void FirstSet()
+        {
+            // All-Time Score
+            allTimeScores = new Tuple<string, long>[10];
+            if ( !File.Exists(GetLogPath(false)) ) {
+                BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(false), FileMode.CreateNew));
+                bw.Close();
+            }
+            using ( BinaryReader bw = new BinaryReader(File.Open(GetLogPath(false), FileMode.Open)) )
+            {
+                int i = 0;
+                for (i = 0; i < 10; ++i)
+                {
+                    if (bw.BaseStream.Length == bw.BaseStream.Position)
+                        break;
+                    string name = bw.ReadString();
+                    long score = bw.ReadInt64();
+                    allTimeScores[i] = new Tuple<string, int>(name : name, score : score);
+                }
+                for (int j = i; j < 10; ++j)
+                    allTimeScores[j] = (name : "", score : 0L);
+            }
+
+            // Monthly Score
+            monthlyScore = new Tuple<string, long>[10];
+            if ( !File.Exists(GetLogPath(true)) ) {
+                BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(true), FileMode.CreateNew));
+                bw.Close();
+            }
+            using ( BinaryReader bw = new BinaryReader(File.Open(GetLogPath(true), FileMode.Open)) )
+            {
+                int i = 0;
+                try {
+                    for (i = 0; i < 10; ++i)
+                    {
+                        string name = bw.ReadString();
+                        long score = bw.ReadInt64();
+                        monthlyScore[i] = new Tuple<string, long>(name, score);
+                    }
+                }
+                catch (EndOfStreamException) {
+                    for (int j = i; j < 10; ++j)
+                        monthlyScore[j] = new Tuple<string, long>("", 0L);
+                }
+            }
+        }
+
+        protected abstract string GetLogPath(bool isMonthScore = false);
+
+        protected void ShowScoreBoard()
+        {
+            Console.Clear();
+            Console.WriteLine("점수판\n");
+            int i = 1;
+            foreach (var tuple in score)
+            {
+                Console.WriteLine(i.ToString() + ' ' + tuple.Item2 + ' ' + tuple.Item1);
+                i++;
+            }
+            Console.ReadKey(true);
+        }
+
+        protected void WriteScoreBoard(bool isMonthScore)
+        {
+            using (BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.CreateNew)))
+            {
+                foreach (var tuple in score)
+                {
+                    bw.Write(tuple.Item1);
+                    bw.Write(tuple.Item2);
+                }
+                bw.Close();
             }
         }
     }
@@ -156,7 +296,7 @@ namespace TimeKiller
                         Console.Write('\n');
                         Console.ReadKey(true);
                     }
-                } catch (EndOfStreamException e) {
+                } catch (EndOfStreamException) {
                     Console.WriteLine("END OF FILE");
                     Console.ReadKey(true);
                 }
@@ -177,10 +317,9 @@ namespace TimeKiller
 3. 점수판 기능 추가
 4. 이어하기 기능 추가";
         
-        
         private static Tuple<string, long>[] scoreBoard = new Tuple<string, long>[10];
         
-        public static void Game()
+        public static int Play()
         {
             BasicSet();
             do
@@ -212,7 +351,7 @@ namespace TimeKiller
                         Console.ReadKey(true);
                         break;
                     case '5':
-                        return;
+                        return 0;
                 }
                     
             } while (true);
@@ -230,22 +369,23 @@ namespace TimeKiller
                     Console.ReadKey(true);
                 }
             }
-                using (BinaryReader bw = new BinaryReader(File.Open(SCOREBOARD_PATH, FileMode.Open)))
-                {
-                    int i = 0;
-                    try {
-                        for (i = 0; i < 10; ++i)
-                        {
-                            string name = bw.ReadString();
-                            long score = bw.ReadInt64();
-                            scoreBoard[i] = new Tuple<string, long>(name, score);
-                        }
-                    }
-                    catch (EndOfStreamException e) {
-                        for (int j = i; j < 10; ++j)
-                            scoreBoard[j] = new Tuple<string, long>("", 0L);
+
+            using (BinaryReader bw = new BinaryReader(File.Open(SCOREBOARD_PATH, FileMode.Open)))
+            {
+                int i = 0;
+                try {
+                    for (i = 0; i < 10; ++i)
+                    {
+                        string name = bw.ReadString();
+                        long score = bw.ReadInt64();
+                        scoreBoard[i] = new Tuple<string, long>(name, score);
                     }
                 }
+                catch (EndOfStreamException) {
+                    for (int j = i; j < 10; ++j)
+                        scoreBoard[j] = new Tuple<string, long>("", 0L);
+                }
+            }
         }
         
         static void PlayNew(long money = StartMoney)
@@ -307,7 +447,7 @@ namespace TimeKiller
                 i++;
             }
             Console.ReadKey(true);
-        }
+        } 
         
         static void WriteScoreBoard()
         {
@@ -330,7 +470,7 @@ namespace TimeKiller
             try {
                 betMoney = long.Parse(Console.ReadLine());
             }
-            catch (FormatException e) {
+            catch (FormatException) {
                 Console.WriteLine("잘못된 입력입니다..!");
                 Console.ReadKey(true);
                 return;
@@ -736,12 +876,12 @@ namespace TimeKiller
         }
     }
 
-    class Yahtzee
+    class Yahtzee : GameWithScoreBoard
     {
         private Dice[] dices;
         private int[] scoreboard;
         private bool[] isScored;
-        public bool isAIMode { get; }
+        private bool isAIMode;
         private const string scoreboardFrame = @"
 =======================================
 | 선택  점수    설명
@@ -780,7 +920,12 @@ namespace TimeKiller
 =======================================
 ";
 
-        public Yahtzee(bool b = false)
+        public Yahtzee()
+        {
+            
+        }
+
+        private void FirstSet(bool b = false)
         {
             dices = new Dice[5];
             foreach (int i in Enumerable.Range(0, dices.Length))
@@ -795,8 +940,10 @@ namespace TimeKiller
             this.isAIMode = b;
         }
 
-        public void Play()
+        protected override int Play()
         {
+            FirstSet();
+
             foreach (int i in Enumerable.Range(0, 13))
             {
                 Roll();
@@ -915,6 +1062,7 @@ namespace TimeKiller
             PrintBoard(-1);
             Console.WriteLine("Your score : " + scoreboard[15]);
             Console.ReadKey(true);
+            return scoreboard[15];
         }
 
         private void Roll()
