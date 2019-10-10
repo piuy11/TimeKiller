@@ -210,14 +210,14 @@ namespace TimeKiller
                         break;
                     string name = bw.ReadString();
                     long score = bw.ReadInt64();
-                    allTimeScores[i] = new Tuple<string, int>(name : name, score : score);
+                    allTimeScores[i] = new Tuple<string, long>(name, score);
                 }
                 for (int j = i; j < 10; ++j)
-                    allTimeScores[j] = (name : "", score : 0L);
+                    allTimeScores[j] = new Tuple<string, long>("", 0L);
             }
 
             // Monthly Score
-            monthlyScore = new Tuple<string, long>[10];
+            monthlyScores = new Tuple<string, long>[10];
             if ( !File.Exists(GetLogPath(true)) ) {
                 BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(true), FileMode.CreateNew));
                 bw.Close();
@@ -225,18 +225,16 @@ namespace TimeKiller
             using ( BinaryReader bw = new BinaryReader(File.Open(GetLogPath(true), FileMode.Open)) )
             {
                 int i = 0;
-                try {
-                    for (i = 0; i < 10; ++i)
-                    {
-                        string name = bw.ReadString();
-                        long score = bw.ReadInt64();
-                        monthlyScore[i] = new Tuple<string, long>(name, score);
-                    }
+                for (i = 0; i < 10; ++i)
+                {
+                    if (bw.BaseStream.Length == bw.BaseStream.Position)
+                        break;
+                    string name = bw.ReadString();
+                    long score = bw.ReadInt64();
+                    monthlyScores[i] = new Tuple<string, long>(name, score);
                 }
-                catch (EndOfStreamException) {
-                    for (int j = i; j < 10; ++j)
-                        monthlyScore[j] = new Tuple<string, long>("", 0L);
-                }
+                for (int j = i; j < 10; ++j)
+                    monthlyScores[j] = new Tuple<string, long>("", 0L);
             }
         }
 
@@ -247,11 +245,26 @@ namespace TimeKiller
             Console.Clear();
             Console.WriteLine("점수판\n");
             int i = 1;
-            foreach (var tuple in score)
+            foreach (var tuple in allTimeScores)
             {
-                Console.WriteLine(i.ToString() + ' ' + tuple.Item2 + ' ' + tuple.Item1);
+                Console.WriteLine("{0} {1, -12} {2}", i, tuple.Item2, tuple.Item1);
                 i++;
             }
+            
+            Console.Write("\n");
+            foreach (int j in Enumerable.Range(0, 50))
+            {
+                Console.Write('=');
+            }
+            Console.WriteLine("\n\n이번 달 점수판\n");
+            i = 1;
+            foreach (var tuple in monthlyScores)
+            {
+                Console.WriteLine("{0} {1, -12} {2}", i, tuple.Item2, tuple.Item1);
+                i++;
+            }
+            
+            
             Console.ReadKey(true);
         }
 
@@ -259,7 +272,7 @@ namespace TimeKiller
         {
             using (BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.CreateNew)))
             {
-                foreach (var tuple in score)
+                foreach (var tuple in allTimeScores)
                 {
                     bw.Write(tuple.Item1);
                     bw.Write(tuple.Item2);
@@ -309,7 +322,7 @@ namespace TimeKiller
         public const long StartMoney = 1000;
         public const string GAME_VERSION = "test_v1.0";
         public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\BeARich";
-        public const string SCOREBOARD_PATH = BASIC_PATH + @"\Scoreborad.dat";
+        public const string SCOREBOARD_PATH = BASIC_PATH + @"\Scoreboard.dat";
         public const string SAVE_PATH = BASIC_PATH + @"Save.dat";
         public const string PATCH_NOTE = GAME_VERSION + @" 패치 노트
 1. 심심풀이 프로그램에 탑재 완료
@@ -923,6 +936,11 @@ namespace TimeKiller
         public Yahtzee()
         {
             
+        }
+
+        protected override string GetLogPath(bool isMonthScore = false)
+        {
+            return TimeKiller.BASIC_PATH + (isMonthScore ? @"\Yahtzee\MonthScoreboard.dat" : @"\Yahtzee\Scoreboard.dat");
         }
 
         private void FirstSet(bool b = false)
