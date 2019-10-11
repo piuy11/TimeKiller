@@ -164,36 +164,11 @@ namespace TimeKiller
         }
     }
 
-    abstract class GameWithScoreBoard : Game
+    abstract class GameWithScoreboard : Game
     {
         Tuple<string, long>[] allTimeScores, monthlyScores;
 
-        public override void Menu()
-        {
-            FirstSet();
-            
-            ConsoleKeyInfo input;
-            do {
-                Console.Clear();
-                Console.WriteLine("1. 게임 시작");
-                Console.WriteLine("2. 게임 설명");
-                Console.WriteLine("3. 점수판");
-                Console.WriteLine("Esc 키를 눌러 나갑니다.");
-                input = Console.ReadKey(true);
-
-                if (input.KeyChar == '1') {
-                    int score = Play();
-                    // score something
-                }
-                else if (input.KeyChar == '2')
-                    Description();
-                else if (input.KeyChar == '3')
-                    ShowScoreBoard();
-            } while (input.Key != ConsoleKey.Escape);
-            
-        }
-
-        protected void FirstSet()
+        private void FirstSet()
         {
             // All-Time Score
             allTimeScores = new Tuple<string, long>[10];
@@ -236,47 +211,139 @@ namespace TimeKiller
                 for (int j = i; j < 10; ++j)
                     monthlyScores[j] = new Tuple<string, long>("", 0L);
             }
+        }        
+
+        public override void Menu()
+        {
+            FirstSet();
+            
+            ConsoleKeyInfo input;
+            do {
+                Console.Clear();
+                Console.WriteLine("1. 게임 시작");
+                Console.WriteLine("2. 게임 설명");
+                Console.WriteLine("3. 점수판");
+                Console.WriteLine("Esc 키를 눌러 나갑니다.");
+                input = Console.ReadKey(true);
+
+                if (input.KeyChar == '1') {
+                    long score = Play();
+                    SetScoreboard(score);
+                }
+                else if (input.KeyChar == '2')
+                    Description();
+                else if (input.KeyChar == '3')
+                    ShowScoreboard();
+            } while (input.Key != ConsoleKey.Escape);
+            
         }
 
-        protected abstract string GetLogPath(bool isMonthScore = false);
+        private void SetScoreboard(long score)
+        {
+            int monthlyRank = GetRank(true, score);
+            int allTimeRank = GetRank(false, score);
+            
+            if (monthlyRank != 10) {
+                string name;
+                do {
+                    Console.Clear();
+                    Console.WriteLine("기록 달성!");
+                    Console.WriteLine("이름을 입력해주세요. (최대 20자)");
+                    name = Console.ReadLine();
+                } while ( (name.Length >= 1 && name.Length <= 20) == false );
 
-        protected void ShowScoreBoard()
+                Tuple<string, long> player = new Tuple<string, long>(name, score);
+                PushScoreboard(true, player, monthlyRank);
+                WriteScoreboard(true);
+                if (allTimeRank != 10) {
+                    PushScoreboard(false, player, allTimeRank);
+                    WriteScoreboard(false);
+                }
+
+                ShowScoreboard(monthlyRank, allTimeRank);
+            }
+        }
+
+        private int GetRank(bool isMonthScore, long score)
+        {
+            int i;
+            Tuple<string, long>[] scores;
+
+            if (isMonthScore)
+                scores = monthlyScores;
+            else
+                scores = allTimeScores;
+
+            for (i = 9; i >= 0; --i)
+            {
+                if (scores[i].Item2 >= score)
+                    break;
+            }
+            return i + 1;
+        }
+
+        private void PushScoreboard(bool isMonthScore, Tuple<string, long> data, int rank)
+        {
+            Tuple<string, long>[] scores;
+            
+            if (isMonthScore)
+                scores = monthlyScores;
+            else
+                scores = allTimeScores;
+
+            for (int i = 9; i > rank; --i)
+                scores[i] = scores[i - 1];
+            scores[rank] = data;
+        }
+
+        protected abstract string GetLogPath(bool isMonthScore);
+
+        protected void ShowScoreboard(int monthlyRank = 10, int allTimeRank = 10)
         {
             Console.Clear();
-            Console.WriteLine("점수판\n");
-            int i = 1;
-            foreach (var tuple in allTimeScores)
+            Console.WriteLine("이번 달 점수판\n");
+            foreach (int i in Enumerable.Range(0, 10))
             {
-                Console.WriteLine("{0} {1, -12} {2}", i, tuple.Item2, tuple.Item1);
-                i++;
+                var tuple = monthlyScores[i];
+                if (i == monthlyRank)
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("{0, -2} {1, -12} {2}", i + 1, tuple.Item2, tuple.Item1);
+                if (i == monthlyRank)
+                    Console.ResetColor();
             }
-            
-            Console.Write("\n");
-            foreach (int j in Enumerable.Range(0, 50))
+            Console.ReadKey(true);
+
+            Console.Clear();
+            Console.WriteLine("전체 점수판\n");
+            foreach (int i in Enumerable.Range(0, 10))
             {
-                Console.Write('=');
-            }
-            Console.WriteLine("\n\n이번 달 점수판\n");
-            i = 1;
-            foreach (var tuple in monthlyScores)
-            {
-                Console.WriteLine("{0} {1, -12} {2}", i, tuple.Item2, tuple.Item1);
-                i++;
-            }
-            
-            
+                var tuple = allTimeScores[i];
+                if (i == allTimeRank)
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("{0, -2} {1, -12} {2}", i + 1, tuple.Item2, tuple.Item1);
+                if (i == allTimeRank)
+                    Console.ResetColor();
+            }            
             Console.ReadKey(true);
         }
 
-        protected void WriteScoreBoard(bool isMonthScore)
+        protected void WriteScoreboard(bool isMonthScore)
         {
-            using (BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.CreateNew)))
+            using (BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.Create)))
             {
-                foreach (var tuple in allTimeScores)
+                Tuple<string, long>[] scores;
+            
+                if (isMonthScore)
+                    scores = monthlyScores;
+                else
+                    scores = allTimeScores;
+                
+                foreach (var tuple in scores)
                 {
                     bw.Write(tuple.Item1);
                     bw.Write(tuple.Item2);
                 }
+
                 bw.Close();
             }
         }
@@ -330,7 +397,7 @@ namespace TimeKiller
 3. 점수판 기능 추가
 4. 이어하기 기능 추가";
         
-        private static Tuple<string, long>[] scoreBoard = new Tuple<string, long>[10];
+        private static Tuple<string, long>[] scoreboard = new Tuple<string, long>[10];
         
         public static int Play()
         {
@@ -355,7 +422,7 @@ namespace TimeKiller
                         PlayNew(PlayContinue());
                         break;
                     case '3':
-                        ShowScoreBoard();
+                        ShowScoreboard();
                         break;
                     case '4':
                         Console.Clear();
@@ -391,12 +458,12 @@ namespace TimeKiller
                     {
                         string name = bw.ReadString();
                         long score = bw.ReadInt64();
-                        scoreBoard[i] = new Tuple<string, long>(name, score);
+                        scoreboard[i] = new Tuple<string, long>(name, score);
                     }
                 }
                 catch (EndOfStreamException) {
                     for (int j = i; j < 10; ++j)
-                        scoreBoard[j] = new Tuple<string, long>("", 0L);
+                        scoreboard[j] = new Tuple<string, long>("", 0L);
                 }
             }
         }
@@ -449,12 +516,12 @@ namespace TimeKiller
             return money;
         }
         
-        static void ShowScoreBoard()
+        static void ShowScoreboard()
         {
             Console.Clear();
             Console.WriteLine("점수판\n");
             int i = 1;
-            foreach (var tuple in scoreBoard)
+            foreach (var tuple in scoreboard)
             {
                 Console.WriteLine(i.ToString() + ' ' + tuple.Item2 + ' ' + tuple.Item1);
                 i++;
@@ -462,11 +529,11 @@ namespace TimeKiller
             Console.ReadKey(true);
         } 
         
-        static void WriteScoreBoard()
+        static void WriteScoreboard()
         {
             using (BinaryWriter bw = new BinaryWriter(File.Open(SCOREBOARD_PATH, FileMode.CreateNew)))
             {
-                foreach (var tuple in scoreBoard)
+                foreach (var tuple in scoreboard)
                 {
                     bw.Write(tuple.Item1);
                     bw.Write(tuple.Item2);
@@ -518,7 +585,7 @@ namespace TimeKiller
     {
 		public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\A2048";
 		public const string SAVE_PATH = BASIC_PATH + @"\Save.dat";
-		public const string SCOREBOARD_PATH = BASIC_PATH + @"\ScoreBoard.dat";
+		public const string SCOREBOARD_PATH = BASIC_PATH + @"\Scoreboard.dat";
 
 
         private int[,] board;
@@ -555,7 +622,6 @@ namespace TimeKiller
             while (CheckIfDead() == false)
             {
                 PrintBoard();
-                bool escape = false;
                 switch (Console.ReadKey(true).Key)
                 {
                     case ConsoleKey.UpArrow:
@@ -621,7 +687,7 @@ namespace TimeKiller
 			}
 
             var pair = emptyList[ randomSeed.Next(0, emptyList.Count()) ];
-            board[pair.Item1, pair.Item2] = (randomSeed.Next(0, 2) == 0 ? 2 : 4);
+            board[pair.Item1, pair.Item2] = (randomSeed.Next(0, 10) == 0 ? 4 : 2);
 		}
 
 		private void Swap(ref int a, ref int b)
@@ -889,12 +955,12 @@ namespace TimeKiller
         }
     }
 
-    class Yahtzee : GameWithScoreBoard
+    class Yahtzee : GameWithScoreboard
     {
         private Dice[] dices;
         private int[] scoreboard;
         private bool[] isScored;
-        private bool isAIMode;
+        // private bool isAIMode;
         private const string scoreboardFrame = @"
 =======================================
 | 선택  점수    설명
@@ -940,7 +1006,7 @@ namespace TimeKiller
 
         protected override string GetLogPath(bool isMonthScore = false)
         {
-            return TimeKiller.BASIC_PATH + (isMonthScore ? @"\Yahtzee\MonthScoreboard.dat" : @"\Yahtzee\Scoreboard.dat");
+            return TimeKiller.BASIC_PATH + (isMonthScore ? @"\Yahtzee\MonthlyScoreboard.dat" : @"\Yahtzee\Scoreboard.dat");
         }
 
         private void FirstSet(bool b = false)
@@ -955,7 +1021,7 @@ namespace TimeKiller
             isScored.Initialize();
             isScored[6] = isScored[7] = isScored[15] = true;
             
-            this.isAIMode = b;
+            // this.isAIMode = b;
         }
 
         protected override int Play()
@@ -1066,8 +1132,9 @@ namespace TimeKiller
                     }
 
                     Console.WriteLine("{0}점을 받습니다. 계속 하시겠습니까?(Y to continue)", score);
-                    var input = Char.ToUpper(Console.ReadKey(true).KeyChar);
-                    if (input == 'Y') {
+                    var input = Console.ReadKey(true);
+                    var inputChar = Char.ToUpper(input.KeyChar);
+                    if (inputChar == 'Y' || input.Key == ConsoleKey.Enter) {
                         scoreboard[index] = score;
                         isScored[index] = true;
                         break;
