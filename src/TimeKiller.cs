@@ -306,7 +306,7 @@ namespace TimeKiller
             {
                 var tuple = monthlyScores[i];
                 if (i == monthlyRank)
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("{0, -2} {1, -12} {2}", i + 1, tuple.Item2, tuple.Item1);
                 if (i == monthlyRank)
                     Console.ResetColor();
@@ -319,7 +319,7 @@ namespace TimeKiller
             {
                 var tuple = allTimeScores[i];
                 if (i == allTimeRank)
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("{0, -2} {1, -12} {2}", i + 1, tuple.Item2, tuple.Item1);
                 if (i == allTimeRank)
                     Console.ResetColor();
