@@ -105,7 +105,7 @@ namespace TimeKiller
     // ⚀⚁⚂⚃⚄⚅
     class Dice : IComparable
     {
-        private Random randomSeed;
+        private static Random randomSeed = new Random();
         public int value { get; private set; }
 
         public static Dictionary<int, char> DiceDic = new Dictionary<int, char>(){
@@ -114,7 +114,6 @@ namespace TimeKiller
 
         public Dice()
         {
-            randomSeed = new Random();
             Roll();
         }
 
