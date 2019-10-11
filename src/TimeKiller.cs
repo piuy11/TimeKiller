@@ -85,11 +85,12 @@ namespace TimeKiller
                 Console.WriteLine("7. 야찌");
                 // Console.WriteLine("8. 게시판");
                 
+                Game game;
                 switch(Console.ReadKey(true).KeyChar)
                 {
                     case '1':
                         Log("부자가 되어보자");
-                        BeARich.Play();
+                        game = new BeARich();
                         break;
                     case '2':
                         Log("숫자야구");
@@ -105,18 +106,15 @@ namespace TimeKiller
                         break;
 					case '5':
                         Log("2048");
-						A2048 game5 = new A2048();
-						game5.Play();
+						game = new A2048();
 						break;
                     case '6':
                         Log("블랙홀");
-                        Blackhole game6 = new Blackhole();
-                        game6.Play();
+                        game = new Blackhole();
                         break;
                     case '7':
                         Log("야찌");
-                        Game yahtzee = new Yahtzee();
-                        yahtzee.Menu();
+                        game = new Yahtzee();
                         break;
                     /*
                     case '8':
@@ -129,14 +127,17 @@ namespace TimeKiller
                             Log("관리자");
                             Administrator.Play();
                         }
-                        break;
+                        continue;
                 }
+                game.Menu();
             }
         }
     }
 
     abstract class Game
     {
+        protected abstract int Play();
+
         public virtual void Menu()
         {
             ConsoleKeyInfo input;
@@ -154,8 +155,6 @@ namespace TimeKiller
             } while (input.Key != ConsoleKey.Escape);
         }
 
-        protected abstract int Play();
-
         protected virtual void Description()
         {
             Console.Clear();
@@ -167,6 +166,8 @@ namespace TimeKiller
     abstract class GameWithScoreboard : Game
     {
         Tuple<string, long>[] allTimeScores, monthlyScores;
+
+        protected abstract string GetLogPath(bool isMonthScore);
 
         private void FirstSet()
         {
@@ -228,6 +229,8 @@ namespace TimeKiller
 
                 if (input.KeyChar == '1') {
                     long score = Play();
+                    if (score == -1)
+                        continue;
                     SetScoreboard(score);
                 }
                 else if (input.KeyChar == '2')
@@ -295,8 +298,6 @@ namespace TimeKiller
                 scores[i] = scores[i - 1];
             scores[rank] = data;
         }
-
-        protected abstract string GetLogPath(bool isMonthScore);
 
         protected void ShowScoreboard(int monthlyRank = 10, int allTimeRank = 10)
         {
@@ -384,91 +385,24 @@ namespace TimeKiller
         }
     }
     
-    class BeARich
+    class BeARich : GamewithScoreboard
     {
-        public const long StartMoney = 1000;
-        public const string GAME_VERSION = "test_v1.0";
-        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\BeARich";
-        public const string SCOREBOARD_PATH = BASIC_PATH + @"\Scoreboard.dat";
-        public const string SAVE_PATH = BASIC_PATH + @"Save.dat";
-        public const string PATCH_NOTE = GAME_VERSION + @" 패치 노트
-1. 심심풀이 프로그램에 탑재 완료
-2. 메뉴 추가
-3. 점수판 기능 추가
-4. 이어하기 기능 추가";
-        
-        private static Tuple<string, long>[] scoreboard = new Tuple<string, long>[10];
-        
-        public static int Play()
-        {
-            BasicSet();
-            do
-            {
-                Console.Clear();
-                Console.WriteLine("부자가 되어보자 " + GAME_VERSION);
-                Console.WriteLine("1. 새로하기");
-                Console.WriteLine("2. 이어하기");
-                Console.WriteLine("3. 점수판");
-                Console.WriteLine("4. 패치 노트");
-                Console.WriteLine("5. 종료");
-                
-                char choice = Console.ReadKey(true).KeyChar;
-                switch(choice)
-                {
-                    case '1':
-                        PlayNew();
-                        break;
-                    case '2':
-                        PlayNew(PlayContinue());
-                        break;
-                    case '3':
-                        ShowScoreboard();
-                        break;
-                    case '4':
-                        Console.Clear();
-                        Console.WriteLine(PATCH_NOTE);
-                        Console.WriteLine("PRESS ANY KEY TO CONTINUE");
-                        Console.ReadKey(true);
-                        break;
-                    case '5':
-                        return 0;
-                }
-                    
-            } while (true);
-        }
-        
-        private static void BasicSet()
-        {
-            if (!File.Exists(SCOREBOARD_PATH)) {
-                using (BinaryWriter bw = new BinaryWriter(File.Open(SCOREBOARD_PATH, FileMode.CreateNew)))
-                {
-                    bw.Write("홍민준");
-                    bw.Write(10000L);
-                    bw.Close();
-                    Console.WriteLine("점수판을 생성했습니다.");
-                    Console.ReadKey(true);
-                }
-            }
+        public const long StartMoney = 1000L;
+        Random randomSeed;
+        private long money, nTimes;
 
-            using (BinaryReader bw = new BinaryReader(File.Open(SCOREBOARD_PATH, FileMode.Open)))
-            {
-                int i = 0;
-                try {
-                    for (i = 0; i < 10; ++i)
-                    {
-                        string name = bw.ReadString();
-                        long score = bw.ReadInt64();
-                        scoreboard[i] = new Tuple<string, long>(name, score);
-                    }
-                }
-                catch (EndOfStreamException) {
-                    for (int j = i; j < 10; ++j)
-                        scoreboard[j] = new Tuple<string, long>("", 0L);
-                }
-            }
+        public BeARich()
+        {
+            money = startMoney;
+            randomSeed = new Random();
+        }
+
+        protected override string GetLogPath(bool isMonthScore)
+        {
+            return TimeKiller.BASIC_PATH + (isMonthScore ? @"\BeARich\MonthlyScoreboard.dat" : @"\BeARich\Scoreboard.dat");
         }
         
-        static void PlayNew(long money = StartMoney)
+        protected override int Play()
         {
             do {
                 Console.Clear();
@@ -477,72 +411,38 @@ namespace TimeKiller
                 Console.WriteLine("2. 배팅한 돈의 4배 : 25%");
                 Console.WriteLine("3. 배팅한 돈의 10배 : 10%");
                 Console.WriteLine("4. 배팅한 돈의 100배 : 1%");
-                Console.WriteLine("5. 노가다 : + 50");
-                Console.WriteLine("6. 구구단 맞추기 : + 100");
+                // Console.WriteLine("5. 노가다 : + 50");
+                // Console.WriteLine("6. 구구단 맞추기 : + 100");
+                Console.WriteLine("Esc 키를 눌러 자살합니다.");
                 
-                switch(Console.ReadKey(true).KeyChar)
+                var input = Console.ReadKey(true);
+                if (input.Key == ConsoleKey.Escape)
+                    return money;
+                else if (input.KeyChar >= '1' && input.KeyChar <= '6') {
+                    Console.WriteLine("{0}번을 입력하셨습니다.", input.KeyChar);
+                    Console.ReadKey(true);
+                }
+                    
+                switch(input.KeyChar)
                 {
                     case '1':
-                        Console.WriteLine("1번을 입력하셨습니다.");
-                        Console.ReadKey(true);
-                        Gamble(ref money, 2);
+                        nTimes = 2;
                         break;
                     case '2':
-                        Console.WriteLine("2번을 입력하셨습니다.");
-                        Console.ReadKey(true);
-                        Gamble(ref money, 4);
+                        nTimes = 4;
                         break;
                     case '3':
-                        Console.WriteLine("3번을 입력하셨습니다.");
-                        Console.ReadKey(true);
-                        Gamble(ref money, 10);
+                        nTimes = 10;
                         break;
                     case '4':
-                        Console.WriteLine("4번을 입력하셨습니다.");
-                        Console.ReadKey(true);
-                        Gamble(ref money, 100);
+                        nTimes = 100;
                         break;
                 }
+                Gamble();
             } while (money > 0);
         }
         
-        static long PlayContinue()
-        {
-            long money;
-            using (BinaryReader br = new BinaryReader(File.Open(SAVE_PATH, FileMode.Open)))
-            {
-                money = br.ReadInt64();
-            }
-            return money;
-        }
-        
-        static void ShowScoreboard()
-        {
-            Console.Clear();
-            Console.WriteLine("점수판\n");
-            int i = 1;
-            foreach (var tuple in scoreboard)
-            {
-                Console.WriteLine(i.ToString() + ' ' + tuple.Item2 + ' ' + tuple.Item1);
-                i++;
-            }
-            Console.ReadKey(true);
-        } 
-        
-        static void WriteScoreboard()
-        {
-            using (BinaryWriter bw = new BinaryWriter(File.Open(SCOREBOARD_PATH, FileMode.CreateNew)))
-            {
-                foreach (var tuple in scoreboard)
-                {
-                    bw.Write(tuple.Item1);
-                    bw.Write(tuple.Item2);
-                }
-                bw.Close();
-            }
-        }
-        
-        static void Gamble(ref long money, int nTimes)
+        private void Gamble()
         {
             double winChance = 1.0 / nTimes;
             Console.WriteLine("얼마를 배팅하시겠습니까?");
@@ -567,7 +467,6 @@ namespace TimeKiller
             Console.WriteLine("추첨을 진행하겠습니다.");
             Console.ReadKey(true);
             
-            Random randomSeed = new Random();
             if (randomSeed.NextDouble() <= winChance) {
                 Console.WriteLine("축하합니다! 당첨되셨습니다! + " + betMoney * nTimes);
                 money += betMoney * nTimes;
@@ -581,12 +480,10 @@ namespace TimeKiller
         }
     }
 
-	class A2048
+	class A2048 : GameWithScoreboard
     {
 		public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\A2048";
 		public const string SAVE_PATH = BASIC_PATH + @"\Save.dat";
-		public const string SCOREBOARD_PATH = BASIC_PATH + @"\Scoreboard.dat";
-
 
         private int[,] board;
         private int score;
@@ -599,8 +496,13 @@ namespace TimeKiller
             randomSeed = new Random();
 			GenerateNewBlock();
         }
+
+        protected override string GetLogPath(bool isMonthScore)
+        {
+            return BASIC_PATH + (isMonthScore ? @"\MonthlyScoreboard.dat" : @"\Scoreboard.dat");
+        }
         
-        public void Play()
+        protected override int Play()
         {
 			if (File.Exists(SAVE_PATH)) {
 				using (BinaryReader br = new BinaryReader(File.Open(SAVE_PATH, FileMode.Open)))
@@ -637,7 +539,7 @@ namespace TimeKiller
                         MoveRight();
                         break;
                     case ConsoleKey.Escape:
-                        return;
+                        return -1;
                         break;
                 }
 				SaveData();
@@ -646,17 +548,8 @@ namespace TimeKiller
 			PrintBoard();
 			Console.WriteLine("GAME OVER");
             Console.ReadKey(true);
-            Console.WriteLine("Press Esc Key to Continue");
-			
-            while (true)
-            {
-                var input = Console.ReadKey(true);
-                if (input.Key == ConsoleKey.Escape)
-                    break;
-            }
 
-			Console.Clear();
-			Console.WriteLine("Your Score : " + score);
+            return score;
         }
 
 		private void SaveData()
@@ -961,7 +854,7 @@ namespace TimeKiller
         private int[] scoreboard;
         private bool[] isScored;
         // private bool isAIMode;
-        private const string scoreboardFrame = @"
+        private const string scoreboardFrame = @"Esc 키를 누르면 메뉴로 나갑니다. (저장x)
 =======================================
 | 선택  점수    설명
 =======================================
@@ -1034,18 +927,52 @@ namespace TimeKiller
                 int rerollLeft = 2;
                 while (rerollLeft != 0)
                 {
-                    bool[] needReroll = GetReroll(rerollLeft);
-                    if (needReroll.All(b => false))
+                    ConsoleKeyInfo input;
+                    bool[] selection = new bool[dices.Length];
+                    selection.Initialize();
+
+                    while (true)
+                    {
+                        PrintBoard(rerollLeft);
+                        foreach (int j in Enumerable.Range(0, selection.Length))
+                        {
+                            if (selection[j])
+                                Console.BackgroundColor = ConsoleColor.Cyan;
+                            Console.Write(j + 1);
+                            if (selection[j])
+                                Console.ResetColor();
+                            Console.Write("    ");
+                        }
+                        
+                        Console.Write('\n');
+                        input = Console.ReadKey(true);
+                        if (input.Key == ConsoleKey.Escape)
+                            return -1;
+                        else if (input.Key == ConsoleKey.Enter)
+                            break; // selection end
+                        else if ( (input.KeyChar >= '1' && input.KeyChar <= '5') == false)
+                            continue; // strange input
+
+                        int index = input.KeyChar - '1';
+                        selection[index] = !selection[index];
+
+                    }
+
+                    if (selection.All(b => false))
                         break;
-                    Roll(needReroll);
+                    Roll(selection);
                     --rerollLeft;
                 }
+
                 while (true) // choose valid
                 {
                     PrintBoard();
                     Console.WriteLine("주사위 값을 넣을 곳을 선택해 주세요. (A ~ M)");
                     
-                    char choice = Char.ToUpper(Console.ReadKey(true).KeyChar);
+                    var input = Console.ReadKey(true);
+                    if (input.Key == ConsoleKey.Escape)
+                        return -1;
+                    char choice = Char.ToUpper(input.KeyChar);
                     int index = (choice <= 'F') ? choice - 'A' : choice - 'A' + 2;
                     if (index < 0 || index > 16)
                         continue;
@@ -1132,7 +1059,7 @@ namespace TimeKiller
                     }
 
                     Console.WriteLine("{0}점을 받습니다. 계속 하시겠습니까?(Y to continue)", score);
-                    var input = Console.ReadKey(true);
+                    input = Console.ReadKey(true);
                     var inputChar = Char.ToUpper(input.KeyChar);
                     if (inputChar == 'Y' || input.Key == ConsoleKey.Enter) {
                         scoreboard[index] = score;
@@ -1163,40 +1090,6 @@ namespace TimeKiller
                 if (b[i])
                     dices[i].Roll();
             }
-        }
-
-        private bool[] GetReroll(int rerollLeft)
-        {
-            ConsoleKeyInfo input;
-            bool[] b = new bool[dices.Length];
-            b.Initialize();
-
-            while (true)
-            {
-                PrintBoard(rerollLeft);
-                foreach (int i in Enumerable.Range(0, b.Length))
-                {
-                    if (b[i])
-                        Console.BackgroundColor = ConsoleColor.Yellow;
-                    Console.Write(i + 1);
-                    if (b[i])
-                        Console.ResetColor();
-                    Console.Write("    ");
-                }
-                
-                Console.Write('\n');
-                input = Console.ReadKey(true);
-                if (input.Key == ConsoleKey.Enter)
-                    break;
-                else if ( (input.KeyChar >= '1' && input.KeyChar <= '5') == false)
-                    continue; 
-
-                int index = input.KeyChar - '1';
-                b[index] = !b[index];
-
-            }
-
-            return b;
         }
 
         private void WriteALine(char character = '-', int num = 39)
