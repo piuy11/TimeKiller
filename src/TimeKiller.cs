@@ -77,13 +77,10 @@ namespace TimeKiller
                 Console.Clear();
                 Console.WriteLine("심심풀이 " + GAME_VERSION);
                 Console.WriteLine("1. 부자가 되어보자");
-                Console.WriteLine("2. 숫자야구");
-                Console.WriteLine("3. 로또 추첨기");
-                Console.WriteLine("4. 오목");
-				Console.WriteLine("5. 2048");
-                Console.WriteLine("6. 블랙홀");
-                Console.WriteLine("7. 야찌");
-                // Console.WriteLine("8. 게시판");
+				Console.WriteLine("2. 2048");
+                Console.WriteLine("3. 블랙홀");
+                Console.WriteLine("4. 야찌");
+                // 숫자야구,로또추첨기, 오목, 게시판
                 
                 Game game;
                 switch(Console.ReadKey(true).KeyChar)
@@ -92,41 +89,25 @@ namespace TimeKiller
                         Log("부자가 되어보자");
                         game = new BeARich();
                         break;
-                    case '2':
-                        Log("숫자야구");
-                        // NumberBaseBall.Game();
-                        break;
-                    case '3':
-                        Log("로또 추첨기");
-                        // Lottery.Game();
-                        break;
-                    case '4':
-                        Log("오목");
-                        // Renju.Game();
-                        break;
-					case '5':
+					case '2':
                         Log("2048");
 						game = new A2048();
 						break;
-                    case '6':
+                    case '3':
                         Log("블랙홀");
                         game = new Blackhole();
                         break;
-                    case '7':
+                    case '4':
                         Log("야찌");
                         game = new Yahtzee();
                         break;
-                    /*
-                    case '8':
-                        Log("게시판");
-                        BulletinBoard game8 = new BulletinBoard();
-                        game8.Play();
-                    */
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
                             Log("관리자");
                             Administrator.Play();
                         }
+                        continue;
+                    default:
                         continue;
                 }
                 game.Menu();
@@ -136,20 +117,25 @@ namespace TimeKiller
 
     abstract class Game
     {
-        protected abstract int Play();
+        protected abstract long Play();
+        protected abstract void ResetGame();
 
         public virtual void Menu()
         {
             ConsoleKeyInfo input;
             do {
+                ResetGame();
+
                 Console.Clear();
                 Console.WriteLine("1. 게임 시작");
                 Console.WriteLine("2. 게임 설명");
                 Console.WriteLine("Esc 키를 눌러 나갑니다.");
                 input = Console.ReadKey(true);
 
-                if (input.KeyChar == '1')
-                    Play();
+                if (input.KeyChar == '1') {
+                    if (Play() == -1)
+                        continue;
+                }
                 else if (input.KeyChar == '2')
                     Description();
             } while (input.Key != ConsoleKey.Escape);
@@ -217,9 +203,12 @@ namespace TimeKiller
         public override void Menu()
         {
             FirstSet();
+            ResetGame();
             
             ConsoleKeyInfo input;
             do {
+                ResetGame();
+
                 Console.Clear();
                 Console.WriteLine("1. 게임 시작");
                 Console.WriteLine("2. 게임 설명");
@@ -385,61 +374,80 @@ namespace TimeKiller
         }
     }
     
-    class BeARich : GamewithScoreboard
+    class BeARich : GameWithScoreboard
     {
-        public const long StartMoney = 1000L;
+        public const long startMoney = 10000L;
         Random randomSeed;
-        private long money, nTimes;
+        private long money, nTimes, bestMoney;
 
         public BeARich()
         {
-            money = startMoney;
-            randomSeed = new Random();
+            
         }
 
         protected override string GetLogPath(bool isMonthScore)
         {
             return TimeKiller.BASIC_PATH + (isMonthScore ? @"\BeARich\MonthlyScoreboard.dat" : @"\BeARich\Scoreboard.dat");
         }
+
+        protected override void ResetGame()
+        {
+            bestMoney = money = startMoney;
+            randomSeed = new Random();
+        }
         
-        protected override int Play()
+        protected override long Play()
         {
             do {
+                bestMoney = (bestMoney < money) ? money : bestMoney;
                 Console.Clear();
                 Console.WriteLine("돈 : " + money);
                 Console.WriteLine("1. 배팅한 돈의 2배 : 50%");
                 Console.WriteLine("2. 배팅한 돈의 4배 : 25%");
                 Console.WriteLine("3. 배팅한 돈의 10배 : 10%");
                 Console.WriteLine("4. 배팅한 돈의 100배 : 1%");
-                // Console.WriteLine("5. 노가다 : + 50");
+                Console.WriteLine("5. 노가다");
                 // Console.WriteLine("6. 구구단 맞추기 : + 100");
                 Console.WriteLine("Esc 키를 눌러 자살합니다.");
                 
                 var input = Console.ReadKey(true);
                 if (input.Key == ConsoleKey.Escape)
-                    return money;
-                else if (input.KeyChar >= '1' && input.KeyChar <= '6') {
+                    break;
+                else if (input.KeyChar >= '1' && input.KeyChar <= '5') {
                     Console.WriteLine("{0}번을 입력하셨습니다.", input.KeyChar);
                     Console.ReadKey(true);
-                }
                     
-                switch(input.KeyChar)
-                {
-                    case '1':
-                        nTimes = 2;
-                        break;
-                    case '2':
-                        nTimes = 4;
-                        break;
-                    case '3':
-                        nTimes = 10;
-                        break;
-                    case '4':
-                        nTimes = 100;
-                        break;
+                    switch(input.KeyChar)
+                    {
+                        case '1':
+                            nTimes = 2;
+                            break;
+                        case '2':
+                            nTimes = 4;
+                            break;
+                        case '3':
+                            nTimes = 10;
+                            break;
+                        case '4':
+                            nTimes = 100;
+                            break;
+                        case '5':
+                            HardWork();
+                            continue;
+                    }
                 }
+                else
+                    continue;
+                
                 Gamble();
             } while (money > 0);
+
+            Console.Clear();
+            Console.WriteLine("당신은 굶어 죽었습니다...");
+            Console.WriteLine("최고 재산 : " + bestMoney);
+            Console.ReadKey(true);
+
+            return bestMoney;
         }
         
         private void Gamble()
@@ -457,7 +465,7 @@ namespace TimeKiller
             }
             
             if (betMoney <= 0 || betMoney > money) {
-                Console.WriteLine("잘못된 입력입니다..!");
+                Console.WriteLine("낼 수 없는 금액입니다..!");
                 Console.ReadKey(true);
                 return;
             }
@@ -478,6 +486,21 @@ namespace TimeKiller
             }
             
         }
+
+        private void HardWork()
+        {
+            ConsoleKeyInfo input;
+            do {
+                Console.Clear();
+                int gained = randomSeed.Next(100, 200);
+                money += gained;
+                Console.WriteLine("+ " + gained);
+                Console.WriteLine("현재 재산 : " + money);
+                Console.WriteLine("아무 키나 누르면 계속 노가다를 진행합니다.");
+                Console.WriteLine("Esc 키를 누르면 노가다를 멈춥니다.");
+                input = Console.ReadKey(true);
+            } while (input.Key != ConsoleKey.Escape);
+        }
     }
 
 	class A2048 : GameWithScoreboard
@@ -491,18 +514,23 @@ namespace TimeKiller
 
         public A2048()
         {
-            board = new int[4, 4];
-            board.Initialize();
-            randomSeed = new Random();
-			GenerateNewBlock();
+
         }
 
         protected override string GetLogPath(bool isMonthScore)
         {
             return BASIC_PATH + (isMonthScore ? @"\MonthlyScoreboard.dat" : @"\Scoreboard.dat");
         }
+
+        protected override void ResetGame()
+        {
+            board = new int[4, 4];
+            board.Initialize();
+            randomSeed = new Random();
+			GenerateNewBlock();
+        }
         
-        protected override int Play()
+        protected override long Play()
         {
 			if (File.Exists(SAVE_PATH)) {
 				using (BinaryReader br = new BinaryReader(File.Open(SAVE_PATH, FileMode.Open)))
@@ -540,7 +568,6 @@ namespace TimeKiller
                         break;
                     case ConsoleKey.Escape:
                         return -1;
-                        break;
                 }
 				SaveData();
             }
@@ -746,13 +773,18 @@ namespace TimeKiller
 		}
     }
 
-    class Blackhole
+    class Blackhole : Game
     {
         private Card[,] board;
         private List<Card> blackhole;
         private int[] cardLeft;
 
         public Blackhole()
+        {
+
+        }
+
+        protected override void ResetGame()
         {
             board = new Card[17, 3];
             blackhole = new List<Card>();
@@ -778,7 +810,7 @@ namespace TimeKiller
             }
         }
 
-        public void Play()
+        protected override long Play()
         {
             Console.Clear();
             
@@ -791,7 +823,7 @@ namespace TimeKiller
 
                 var input = Console.ReadKey(true);
                 if (input.Key == ConsoleKey.Escape)
-                    return;
+                    return -1;
                 char inputChar = input.KeyChar;
                 if (inputChar >= 'a' && inputChar <= 'q') {
                     int index = inputChar - 'a';
@@ -806,6 +838,8 @@ namespace TimeKiller
                     }
                 }
             }
+
+            return 0;
         }
 
         private bool IsDead()
@@ -902,7 +936,7 @@ namespace TimeKiller
             return TimeKiller.BASIC_PATH + (isMonthScore ? @"\Yahtzee\MonthlyScoreboard.dat" : @"\Yahtzee\Scoreboard.dat");
         }
 
-        private void FirstSet(bool b = false)
+        protected override void ResetGame()
         {
             dices = new Dice[5];
             foreach (int i in Enumerable.Range(0, dices.Length))
@@ -917,10 +951,8 @@ namespace TimeKiller
             // this.isAIMode = b;
         }
 
-        protected override int Play()
+        protected override long Play()
         {
-            FirstSet();
-
             foreach (int i in Enumerable.Range(0, 13))
             {
                 Roll();
