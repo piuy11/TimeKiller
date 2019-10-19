@@ -238,15 +238,12 @@ namespace TimeKiller
                 } while ( (name.Length >= 1 && name.Length <= 20) == false );
 
                 Tuple<string, long> player = new Tuple<string, long>(name, score);
-                if (monthlyRank != 10) {
+                if (monthlyRank != 10)
                     PushScoreboard(true, player, monthlyRank);
-                    WriteScoreboard(true);
-                }
-                if (allTimeRank != 10) {
+                if (allTimeRank != 10)
                     PushScoreboard(false, player, allTimeRank);
-                    WriteScoreboard(false);
-                }
-
+                
+                WriteScoreboard();
                 ShowScoreboard(monthlyRank, allTimeRank);
             }
         }
