@@ -155,24 +155,28 @@ namespace TimeKiller
 
     abstract class GameWithScoreboard : Game
     {
-        Tuple<string, long>[] allTimeScores, monthlyScores;
+        Tuple<string, long>[] monthlyScores, allTimeScores;
 
         protected abstract string GetLogPath(bool isMonthScore);
 
-        private void FirstSet()
+        public GameWithScoreboard()
         {
+            monthlyScores = new Tuple<string, long>[10];
+            allTimeScores = new Tuple<string, long>[10];
+            
             FirstSet(true);
             FirstSet(false);
         }
 
         private void FirstSet(bool isMonthScore)
         {
-            Tuple<string, long>[] scores = new Tuple<string, long>[10];
+            Tuple<string, long>[] scores = isMonthScore ? monthlyScores : allTimeScores;
             if ( !File.Exists(GetLogPath(isMonthScore)) ) {
                 using ( BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.CreateNew)) )
                 {
                     for (int i = 0; i < 10; ++i)
                         scores[i] = new Tuple<string, long>("", 0L);
+                    WriteScoreboard(isMonthScore);
                 }
             }
             else {
@@ -191,7 +195,6 @@ namespace TimeKiller
 
         public override void Menu()
         {
-            FirstSet();
             ResetGame();
             
             ConsoleKeyInfo input;
@@ -308,6 +311,12 @@ namespace TimeKiller
             Console.ReadKey(true);
         }
 
+        protected void WriteScoreboard()
+        {
+            WriteScoreboard(true);
+            WriteScoreboard(false);
+        }
+
         protected void WriteScoreboard(bool isMonthScore)
         {
             using (BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.Create)))
@@ -371,7 +380,7 @@ namespace TimeKiller
         Random randomSeed;
         private long money, nTimes, bestMoney;
 
-        public BeARich()
+        public BeARich() : base()
         {
             
         }
@@ -503,7 +512,7 @@ namespace TimeKiller
         private int score;
         private Random randomSeed;
 
-        public A2048()
+        public A2048() : base()
         {
 
         }
@@ -770,7 +779,7 @@ namespace TimeKiller
         private List<Card> blackhole;
         private int[] cardLeft;
 
-        public Blackhole()
+        public Blackhole() : base()
         {
 
         }
@@ -917,7 +926,7 @@ namespace TimeKiller
 =======================================
 ";
 
-        public Yahtzee()
+        public Yahtzee() : base()
         {
             
         }
