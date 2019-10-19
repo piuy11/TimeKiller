@@ -101,6 +101,10 @@ namespace TimeKiller
                         Log("야찌");
                         game = new Yahtzee();
                         break;
+                    case '5':
+                        Log("테트리스");
+                        game = new Tetris();
+                        break;
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
                             Log("관리자");
@@ -157,48 +161,33 @@ namespace TimeKiller
 
         private void FirstSet()
         {
-            // All-Time Score
-            allTimeScores = new Tuple<string, long>[10];
-            if ( !File.Exists(GetLogPath(false)) ) {
-                BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(false), FileMode.CreateNew));
-                bw.Close();
-            }
-            using ( BinaryReader bw = new BinaryReader(File.Open(GetLogPath(false), FileMode.Open)) )
-            {
-                int i = 0;
-                for (i = 0; i < 10; ++i)
+            FirstSet(true);
+            FirstSet(false);
+        }
+
+        private void FirstSet(bool isMonthScore)
+        {
+            Tuple<string, long>[] scores = new Tuple<string, long>[10];
+            if ( !File.Exists(GetLogPath(isMonthScore)) ) {
+                using ( BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.CreateNew)) )
                 {
-                    if (bw.BaseStream.Length == bw.BaseStream.Position)
-                        break;
-                    string name = bw.ReadString();
-                    long score = bw.ReadInt64();
-                    allTimeScores[i] = new Tuple<string, long>(name, score);
+                    for (int i = 0; i < 10; ++i)
+                        scores[i] = new Tuple<string, long>("", 0L);
                 }
-                for (int j = i; j < 10; ++j)
-                    allTimeScores[j] = new Tuple<string, long>("", 0L);
+            }
+            else {
+                using ( BinaryReader bw = new BinaryReader(File.Open(GetLogPath(isMonthScore), FileMode.Open)) )
+                {
+                    for (int i = 0; i < 10; ++i)
+                    {
+                        string name = bw.ReadString();
+                        long score = bw.ReadInt64();
+                        scores[i] = new Tuple<string, long>(name, score);
+                    }
+                }
             }
 
-            // Monthly Score
-            monthlyScores = new Tuple<string, long>[10];
-            if ( !File.Exists(GetLogPath(true)) ) {
-                BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(true), FileMode.CreateNew));
-                bw.Close();
-            }
-            using ( BinaryReader bw = new BinaryReader(File.Open(GetLogPath(true), FileMode.Open)) )
-            {
-                int i = 0;
-                for (i = 0; i < 10; ++i)
-                {
-                    if (bw.BaseStream.Length == bw.BaseStream.Position)
-                        break;
-                    string name = bw.ReadString();
-                    long score = bw.ReadInt64();
-                    monthlyScores[i] = new Tuple<string, long>(name, score);
-                }
-                for (int j = i; j < 10; ++j)
-                    monthlyScores[j] = new Tuple<string, long>("", 0L);
-            }
-        }        
+        }
 
         public override void Menu()
         {
@@ -235,7 +224,7 @@ namespace TimeKiller
             int monthlyRank = GetRank(true, score);
             int allTimeRank = GetRank(false, score);
             
-            if (monthlyRank != 10) {
+            if (monthlyRank != 10 || allTimeRank != 10) {
                 string name;
                 do {
                     Console.Clear();
@@ -245,8 +234,10 @@ namespace TimeKiller
                 } while ( (name.Length >= 1 && name.Length <= 20) == false );
 
                 Tuple<string, long> player = new Tuple<string, long>(name, score);
-                PushScoreboard(true, player, monthlyRank);
-                WriteScoreboard(true);
+                if (monthlyRank != 10) {
+                    PushScoreboard(true, player, monthlyRank);
+                    WriteScoreboard(true);
+                }
                 if (allTimeRank != 10) {
                     PushScoreboard(false, player, allTimeRank);
                     WriteScoreboard(false);
@@ -1176,6 +1167,23 @@ namespace TimeKiller
             Console.Write("\n");
         }
     }
-}
 
-// TODO : 카드게임들, 스도쿠제작기
+    class Tetris : GameWithScoreboard
+    {
+        protected override string GetLogPath(bool isMonthScore)
+        {
+            return TimeKiller.BASIC_PATH + @"\Tetris\" + (isMonthScore ? "MonthlyScoreboard.dat" : "Scoreboard.dat");
+        }
+
+        protected override void ResetGame()
+        {
+
+        }
+        
+        protected override long Play()
+        {
+            return 0;
+        }
+        
+    }
+}
