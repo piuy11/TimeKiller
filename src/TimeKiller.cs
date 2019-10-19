@@ -80,6 +80,7 @@ namespace TimeKiller
 				Console.WriteLine("2. 2048");
                 Console.WriteLine("3. 블랙홀");
                 Console.WriteLine("4. 야찌");
+                Console.WriteLine("5. 테트리스");
                 // 숫자야구,로또추첨기, 오목, 게시판
                 
                 Game game;
@@ -1178,6 +1179,10 @@ namespace TimeKiller
         
         protected override long Play()
         {
+            Console.Clear();
+            Console.WriteLine("□ ■");
+            Console.WriteLine("□ ■");
+            Console.ReadKey(true);
             return 0;
         }
         
