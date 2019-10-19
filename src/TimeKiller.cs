@@ -172,12 +172,13 @@ namespace TimeKiller
         {
             Tuple<string, long>[] scores = isMonthScore ? monthlyScores : allTimeScores;
             if ( !File.Exists(GetLogPath(isMonthScore)) ) {
-                using ( BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.CreateNew)) )
-                {
-                    for (int i = 0; i < 10; ++i)
-                        scores[i] = new Tuple<string, long>("", 0L);
-                    WriteScoreboard(isMonthScore);
-                }
+                BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.CreateNew));
+                bw.Close();
+
+                for (int i = 0; i < 10; ++i)
+                    scores[i] = new Tuple<string, long>("", 0L);
+
+                WriteScoreboard(isMonthScore);
             }
             else {
                 using ( BinaryReader bw = new BinaryReader(File.Open(GetLogPath(isMonthScore), FileMode.Open)) )
@@ -253,12 +254,7 @@ namespace TimeKiller
         private int GetRank(bool isMonthScore, long score)
         {
             int i;
-            Tuple<string, long>[] scores;
-
-            if (isMonthScore)
-                scores = monthlyScores;
-            else
-                scores = allTimeScores;
+            Tuple<string, long>[] scores = isMonthScore ? monthlyScores : allTimeScores;
 
             for (i = 9; i >= 0; --i)
             {
@@ -270,12 +266,7 @@ namespace TimeKiller
 
         private void PushScoreboard(bool isMonthScore, Tuple<string, long> data, int rank)
         {
-            Tuple<string, long>[] scores;
-            
-            if (isMonthScore)
-                scores = monthlyScores;
-            else
-                scores = allTimeScores;
+            Tuple<string, long>[] scores = isMonthScore ? monthlyScores : allTimeScores;
 
             for (int i = 9; i > rank; --i)
                 scores[i] = scores[i - 1];
@@ -284,28 +275,27 @@ namespace TimeKiller
 
         protected void ShowScoreboard(int monthlyRank = 10, int allTimeRank = 10)
         {
-            Console.Clear();
-            Console.WriteLine("이번 달 점수판\n");
-            foreach (int i in Enumerable.Range(0, 10))
-            {
-                var tuple = monthlyScores[i];
-                if (i == monthlyRank)
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("{0, -2} {1, -12} {2}", i + 1, tuple.Item2, tuple.Item1);
-                if (i == monthlyRank)
-                    Console.ResetColor();
-            }
-            Console.ReadKey(true);
+            ShowScoreboard(true, monthlyRank);
+            ShowScoreboard(false, allTimeRank);
+        }
+
+        protected void ShowScoreboard(bool isMonthScore, int rank)
+        {
+            Tuple<string, long>[] scores = isMonthScore ? monthlyScores : allTimeScores;
 
             Console.Clear();
-            Console.WriteLine("전체 점수판\n");
+            if (isMonthScore)
+                Console.WriteLine("이번 달 점수판\n");
+            else  
+                Console.WriteLine("전체 점수판\n");
+
             foreach (int i in Enumerable.Range(0, 10))
             {
-                var tuple = allTimeScores[i];
-                if (i == allTimeRank)
+                var tuple = scores[i];
+                if (i == rank)
                     Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("{0, -2} {1, -12} {2}", i + 1, tuple.Item2, tuple.Item1);
-                if (i == allTimeRank)
+                if (i == rank)
                     Console.ResetColor();
             }            
             Console.ReadKey(true);
