@@ -1165,6 +1165,50 @@ namespace TimeKiller
         }
     }
 
+    /*
+    -Tetris rules-
+
+    Matrix : 10 * 20 cells
+    Hard Drop : instantly drop
+    Soft Drop : 20 times faster
+    Bag : 7 tetriminos are packed together, and their order can be chaged
+    Queue : should show next tetriminos (1 ~ 6)
+    Ghost Piece : show the dropping place (On | Off)
+    Hold Queue (On | Off)
+    If falls to the ground, 0.5 sec to lock down
+
+    O : yellow
+    I : light blue
+    T : purple
+    J : orange
+    L : dark blue
+    S : green
+    Z : red
+
+    Starting Location : 21st and 22nd row in the middle, 3-wide minos - 4th to 6th cell
+    When tetrimino is generated,
+    1. drops one row immediately if not bothered
+    2. able to move/rotate
+    3. ghost piece appears
+
+    Pause : Esc, F1
+    Hold : Shift, C, 0
+    Rotate(counter-clockwise) : Z, 3, 7
+    Rotate(clockwise) : Up, X, 1, 5, 9
+    Hard Drop : Space, 8
+    Soft Drop : Down, 2
+    Move Left : <-, 4
+    Move Right : ->, 6
+
+
+    */
+
+    struct Tetrimino
+    {
+        bool[][] isBlock;
+
+    }
+
     class Tetris : GameWithScoreboard
     {
         protected override string GetLogPath(bool isMonthScore)
