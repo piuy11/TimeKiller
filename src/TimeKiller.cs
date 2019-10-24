@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace General
 {
@@ -1211,6 +1213,8 @@ namespace TimeKiller
 
     class Tetris : GameWithScoreboard
     {
+        private ConsoleKeyInfo input;
+
         protected override string GetLogPath(bool isMonthScore)
         {
             return TimeKiller.BASIC_PATH + @"\Tetris\" + (isMonthScore ? "MonthlyScoreboard.dat" : "Scoreboard.dat");
@@ -1218,16 +1222,38 @@ namespace TimeKiller
 
         protected override void ResetGame()
         {
-
+            input = new ConsoleKeyInfo();
         }
         
         protected override long Play()
         {
-            Console.Clear();
-            Console.WriteLine("□ ■");
-            Console.WriteLine("□ ■");
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Task.Factory.StartNew(() => CheckInput(cts.Token), cts.Token);
+
+            int count = 0;
+            while (true)
+            {
+                if (input.Key == ConsoleKey.Escape)
+                    break;
+                Console.WriteLine("waiting for {0} times", count);
+                count++;
+                Thread.Sleep(1000);
+            }
+            cts.Cancel();
+            if (cts != null) cts = null;
+
+            Console.WriteLine("End!");
             Console.ReadKey(true);
+
             return 0;
+        }
+
+        private void CheckInput(CancellationToken token)
+        {
+            while (true)
+            {
+                input = Console.ReadKey(true);
+            }
         }
         
     }
