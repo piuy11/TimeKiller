@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace General
 {
@@ -1213,7 +1214,7 @@ namespace TimeKiller
 
     class Tetris : GameWithScoreboard
     {
-        private ConsoleKeyInfo input;
+        private ConsoleKey input;
 
         protected override string GetLogPath(bool isMonthScore)
         {
@@ -1222,9 +1223,10 @@ namespace TimeKiller
 
         protected override void ResetGame()
         {
-            input = new ConsoleKeyInfo();
+            // input = new ConsoleKeyInfo();
         }
-        
+
+        /*
         protected override long Play()
         {
             CancellationTokenSource cts = new CancellationTokenSource();
@@ -1247,12 +1249,45 @@ namespace TimeKiller
 
             return 0;
         }
+        */
 
-        private void CheckInput(CancellationToken token)
+        protected override long Play()
+        {
+            Task inputTask = new Task(CheckInput);
+
+            // Print Board
+
+            System.Timers.Timer timer = new System.Timers.Timer(1000);
+            timer.Elapsed += PrintingEvent;
+
+            inputTask.Start();
+            timer.Start();
+            while (true)
+            {
+                if (input == ConsoleKey.DownArrow)
+                    timer.Interval -= 100;
+                else if (input == ConsoleKey.UpArrow)
+                    timer.Interval += 100;
+                else if (input == ConsoleKey.Escape)
+                    break;
+            }
+
+            inputTask.Dispose();
+            Console.WriteLine("End!");
+
+            return 0;
+        }
+
+        private static void PrintingEvent(Object source, ElapsedEventArgs e)
+        {
+            Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss.fff}", e.SignalTime);
+        }
+
+        private void CheckInput()
         {
             while (true)
             {
-                input = Console.ReadKey(true);
+                input = Console.ReadKey(true).Key;
             }
         }
         
