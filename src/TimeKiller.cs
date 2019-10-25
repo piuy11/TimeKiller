@@ -1203,7 +1203,7 @@ namespace TimeKiller
     Move Left : <-, 4
     Move Right : ->, 6
 
-
+    ■□
     */
 
     struct Tetrimino
@@ -1253,9 +1253,19 @@ namespace TimeKiller
 
         protected override long Play()
         {
-            Task inputTask = new Task(CheckInput);
+            var tokenSource = new CancellationTokenSource();
+            Task inputTask = new Task(CheckInput, tokenSource.Token);
 
-            // Print Board
+            foreach (int i in Enumerable.Range(0, 20))
+            {
+                Console.Write("| ");
+                foreach (int j in Enumerable.Range(0, 10))
+                    Console.Write("□ ");
+                Console.WriteLine("|");
+            }
+            foreach (int i in Enumerable.Range(0, 23))
+                Console.Write("-");
+            Console.WriteLine("■□");
 
             System.Timers.Timer timer = new System.Timers.Timer(1000);
             timer.Elapsed += PrintingEvent;
@@ -1270,17 +1280,31 @@ namespace TimeKiller
                     timer.Interval += 100;
                 else if (input == ConsoleKey.Escape)
                     break;
+                else
+                    continue;
+
+                input = 0;
             }
 
+            tokenSource.Cancel();
             inputTask.Dispose();
+            timer.Stop();
+            timer.Dispose();
+            
+            // inputTask.Dispose();
             Console.WriteLine("End!");
 
             return 0;
         }
 
-        private static void PrintingEvent(Object source, ElapsedEventArgs e)
+        private void PrintingEvent(Object source, ElapsedEventArgs e)
         {
             Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss.fff}", e.SignalTime);
+        }
+
+        private void BlockDownEvent(Object source, ElapsedEventArgs e)
+        {
+            
         }
 
         private void CheckInput()
