@@ -1215,7 +1215,8 @@ namespace TimeKiller
 
     class Tetris : GameWithScoreboard
     {
-        private ConsoleKey input;
+        const int WIDTH = 10, LENGTH = 40;
+        char[,] matrix;
 
         protected override string GetLogPath(bool isMonthScore)
         {
@@ -1224,7 +1225,12 @@ namespace TimeKiller
 
         protected override void ResetGame()
         {
-            // input = new ConsoleKeyInfo();
+            matrix = new char[WIDTH, LENGTH];
+            foreach (int i in Enumerable.Range(0, WIDTH))
+            {
+                foreach (int j in Enumerable.Range(0, LENGTH))
+                    matrix[i, j] = '.';
+            }
         }
 
         /*
@@ -1254,29 +1260,18 @@ namespace TimeKiller
 
         protected override long Play()
         {
-            foreach (int i in Enumerable.Range(0, 20))
-            {
-                Console.Write("| ");
-                foreach (int j in Enumerable.Range(0, 10))
-                    Console.Write("□ ");
-                Console.WriteLine("|");
-            }
-            foreach (int i in Enumerable.Range(0, 23))
-                Console.Write("-");
-            Console.WriteLine("■□");
-
             System.Timers.Timer timer = new System.Timers.Timer(1000);
-            timer.Elapsed += PrintingEvent;
+            timer.Elapsed += BlockDownEvent;
 
             timer.Start();
-            do
+            while (true)
             {
                 if (Console.KeyAvailable)
                 {
                     var key = Console.ReadKey(true);
                     Console.WriteLine(key.Key);
                 }
-            } while (true);
+            }
             
             timer.Stop();
             timer.Dispose();
@@ -1287,23 +1282,23 @@ namespace TimeKiller
             return 0;
         }
 
-        private void PrintingEvent(Object source, ElapsedEventArgs e)
+        private void PrintMatrix()
         {
-            Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss.fff}", e.SignalTime);
+            foreach (int i in Enumerable.Range(0, LENGTH))
+            {
+                Console.Write("| ");
+                foreach (int j in Enumerable.Range(0, WIDTH))
+                    Console.Write("" + matrix[WIDTH, LENGTH] + ' ');
+                Console.WriteLine("|");
+            }
+            foreach (int i in Enumerable.Range(0, 23))
+                Console.Write("-");
+            Console.WriteLine("■□");
         }
 
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
         {
-            
-        }
-
-        private void CheckInput()
-        {
-            while (true)
-            {
-                input = Console.ReadKey(true).Key;
-            }
-        }
-        
+            PrintMatrix();
+        }        
     }
 }
