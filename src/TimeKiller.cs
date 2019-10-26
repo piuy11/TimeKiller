@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows.Input;
 
 namespace General
 {
@@ -1253,9 +1254,6 @@ namespace TimeKiller
 
         protected override long Play()
         {
-            var tokenSource = new CancellationTokenSource();
-            Task inputTask = new Task(CheckInput, tokenSource.Token);
-
             foreach (int i in Enumerable.Range(0, 20))
             {
                 Console.Write("| ");
@@ -1270,24 +1268,16 @@ namespace TimeKiller
             System.Timers.Timer timer = new System.Timers.Timer(1000);
             timer.Elapsed += PrintingEvent;
 
-            inputTask.Start();
             timer.Start();
-            while (true)
+            do
             {
-                if (input == ConsoleKey.DownArrow)
-                    timer.Interval -= 100;
-                else if (input == ConsoleKey.UpArrow)
-                    timer.Interval += 100;
-                else if (input == ConsoleKey.Escape)
-                    break;
-                else
-                    continue;
-
-                input = 0;
-            }
-
-            tokenSource.Cancel();
-            inputTask.Dispose();
+                if (Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey(true);
+                    Console.WriteLine(key.Key);
+                }
+            } while (true);
+            
             timer.Stop();
             timer.Dispose();
             
