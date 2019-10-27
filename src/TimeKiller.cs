@@ -1207,7 +1207,7 @@ namespace TimeKiller
     ■□
     */
 
-    struct Tetrimino
+    class Tetrimino
     {
         bool[,] isBlock;
         readonly int size;
@@ -1237,14 +1237,28 @@ namespace TimeKiller
 
         public void Print()
         {
-            int x = Console.CursorLeft, y = Console.CursorTop;
+            int cursorX = Console.CursorLeft, cursorY = Console.CursorTop;
+            // Console.Write("x : {0}, y : {1}", Console.CursorLeft, Console.CursorTop);
+
+            foreach (int i in Enumerable.Range(0, size))
+            {
+                var pos = Tetris.GetCursorPosition(x + i, y - 1);
+                if (pos.Item1 < 0 || pos.Item2 < 0)
+                    continue;
+                Console.SetCursorPosition(pos.Item1, pos.Item2);
+                Console.Write('.');
+            }
 
             foreach (int i in Enumerable.Range(0, size))
             {
                 foreach (int j in Enumerable.Range(0, size))
                 {
                     if (isBlock[i, j]) {
-                        var pos = Tetris.GetCursorPosition(x - (Tetris.LENGTH - 25) + i, y + j);
+                        var pos = Tetris.GetCursorPosition(x + i, y + j);
+                        // Console.Write("position : {0}, {1}", x + i, y + j);
+                        // Console.Write("cursor : {0}, {1}", pos.Item1, pos.Item2);
+                        if (pos.Item1 < 0 || pos.Item2 < 0)
+                            continue;
                         Console.SetCursorPosition(pos.Item1, pos.Item2);
                         Console.ForegroundColor = color;
                         Console.Write('■');
@@ -1253,8 +1267,16 @@ namespace TimeKiller
                 }
             }
 
-            Console.CursorLeft = x;
-            Console.CursorTop = y;
+            // Console.CursorLeft = cursorX;
+            // Console.CursorTop  = cursorY;
+            // Console.SetCursorPosition(cursorX, cursorY);
+            // Console.Write("x : {0}, y : {1}", Console.CursorLeft, Console.CursorTop);
+            Console.SetCursorPosition(cursorX, cursorY);
+        }
+
+        public void Down()
+        {
+            y++;
         }
     }
 
@@ -1357,7 +1379,7 @@ namespace TimeKiller
             Console.Clear();
             foreach (int i in Enumerable.Range(LENGTH / 2, LENGTH / 2))
             {
-                Console.Write("|");
+                Console.Write("| ");
                 foreach (int j in Enumerable.Range(0, WIDTH))
                     Console.Write("" + matrix[j, i] + ' ');
                     
@@ -1376,11 +1398,12 @@ namespace TimeKiller
 
         public static Tuple<int, int> GetCursorPosition(int x, int y)
         {
-            return new Tuple<int, int> (x * 2 + 2, y);
+            return new Tuple<int, int> ( x * 2 + 2, y - 20);
         }
 
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
         {
+            current.Down();
             current.Print();
         }        
     }
