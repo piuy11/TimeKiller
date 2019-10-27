@@ -1209,14 +1209,34 @@ namespace TimeKiller
 
     struct Tetrimino
     {
-        bool[][] isBlock;
+        bool[,] isBlock;
+        readonly int size;
+        readonly char name;
+        int x, y;
+        ConsoleColor color;
 
+        public Tetrimino(bool[,] isBlock, int size, char name, int x, int y, ConsoleColor color)
+        {
+            this.isBlock = isBlock;
+            this.size = size;
+            this.name = name;
+            this.x = x;
+            this.y = y;
+            this.color = color;
+        }
+
+        public void Rotate(bool isLeft)
+        {
+
+        }
     }
 
     class Tetris : GameWithScoreboard
     {
         const int WIDTH = 10, LENGTH = 40;
         char[,] matrix;
+        Queue nextTetrimino;
+        Dictionary<char, Tetrimino> models;
 
         protected override string GetLogPath(bool isMonthScore)
         {
@@ -1231,32 +1251,46 @@ namespace TimeKiller
                 foreach (int j in Enumerable.Range(0, LENGTH))
                     matrix[i, j] = '.';
             }
+
+            nextTetrimino = new Queue();
+
+            models = new Dictionary<char, Tetrimino>();
+            models['I'] = new Tetrimino(new bool[4, 4]{
+                {false, false, false, false},
+                {false, false, false, false},
+                {false, false, false, false},
+                {true,  true,  true,  true},
+            }, 4, 'I', 0, 0, cyan);
+            models['T'] = new Tetrimino(new bool[3, 3]{
+                {false, false, false},
+                {false, true,  false},
+                {true,  true,  true},
+            }, 3, 'T', 0, 0, purple);
+            models['S'] = new Tetrimino(new bool[3, 3]{
+                {false, false, false},
+                {false, true,  true},
+                {true,  true,  false},
+            }, 3, 'S', 0, 0, green);
+            models['Z'] = new Tetrimino(new bool[3, 3]{
+                {false, false, false},
+                {true,  true,  false},
+                {false, true,  true},
+            }, 3, 'Z', 0, 0, red);
+            models['L'] = new Tetrimino(new bool[3, 3]{
+                {false, false, false},
+                {false, false, true},
+                {true,  true,  true},
+            }, 3, 'L', 0, 0, orange);
+            models['J'] = new Tetrimino(new bool[3, 3]{
+                {false, false, false},
+                {true,  false, false},
+                {true,  true,  true},
+            }, 3, 'J', 0, 0, darkblue);
+            models['o'] = new Tetrimino(new bool[2, 2]{
+                {true, true},
+                {true, true},
+            }, 2, 'O', 0, 0, yellow);
         }
-
-        /*
-        protected override long Play()
-        {
-            CancellationTokenSource cts = new CancellationTokenSource();
-            Task.Factory.StartNew(() => CheckInput(cts.Token), cts.Token);
-
-            int count = 0;
-            while (true)
-            {
-                if (input.Key == ConsoleKey.Escape)
-                    break;
-                Console.WriteLine("waiting for {0} times", count);
-                count++;
-                Thread.Sleep(1000);
-            }
-            cts.Cancel();
-            if (cts != null) cts = null;
-
-            Console.WriteLine("End!");
-            Console.ReadKey(true);
-
-            return 0;
-        }
-        */
 
         protected override long Play()
         {
@@ -1284,11 +1318,12 @@ namespace TimeKiller
 
         private void PrintMatrix()
         {
-            foreach (int i in Enumerable.Range(0, LENGTH))
+            Console.Clear();
+            foreach (int i in Enumerable.Range(LENGTH / 2, LENGTH / 2))
             {
-                Console.Write("| ");
+                Console.Write("|");
                 foreach (int j in Enumerable.Range(0, WIDTH))
-                    Console.Write("" + matrix[WIDTH, LENGTH] + ' ');
+                    Console.Write("" + matrix[j, i] + ' ');
                 Console.WriteLine("|");
             }
             foreach (int i in Enumerable.Range(0, 23))
