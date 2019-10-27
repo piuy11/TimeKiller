@@ -1229,13 +1229,41 @@ namespace TimeKiller
         {
 
         }
+
+        public bool CheckBlock(int checkX, int checkY)
+        {
+            return isBlock[x + checkX, y + checkY];
+        }
+
+        public void Print()
+        {
+            int x = Console.CursorLeft, y = Console.CursorTop;
+
+            foreach (int i in Enumerable.Range(0, size))
+            {
+                foreach (int j in Enumerable.Range(0, size))
+                {
+                    if (isBlock[i, j]) {
+                        var pos = Tetris.GetCursorPosition(x - (Tetris.LENGTH - 25) + i, y + j);
+                        Console.SetCursorPosition(pos.Item1, pos.Item2);
+                        Console.ForegroundColor = color;
+                        Console.Write('■');
+                        Console.ResetColor();
+                    }
+                }
+            }
+
+            Console.CursorLeft = x;
+            Console.CursorTop = y;
+        }
     }
 
     class Tetris : GameWithScoreboard
     {
-        const int WIDTH = 10, LENGTH = 40;
+        public const int WIDTH = 10, LENGTH = 40;
         char[,] matrix;
-        Queue nextTetrimino;
+        Tetrimino current;
+        Queue<Tetrimino> nextQueue;
         Dictionary<char, Tetrimino> models;
 
         protected override string GetLogPath(bool isMonthScore)
@@ -1252,44 +1280,48 @@ namespace TimeKiller
                     matrix[i, j] = '.';
             }
 
-            nextTetrimino = new Queue();
-
             models = new Dictionary<char, Tetrimino>();
             models['I'] = new Tetrimino(new bool[4, 4]{
                 {false, false, false, false},
                 {false, false, false, false},
                 {false, false, false, false},
                 {true,  true,  true,  true},
-            }, 4, 'I', 0, 0, cyan);
+            }, 4, 'I', 3, 17, ConsoleColor.Cyan);
             models['T'] = new Tetrimino(new bool[3, 3]{
                 {false, false, false},
                 {false, true,  false},
                 {true,  true,  true},
-            }, 3, 'T', 0, 0, purple);
+            }, 3, 'T', 3, 18, ConsoleColor.Magenta);
             models['S'] = new Tetrimino(new bool[3, 3]{
                 {false, false, false},
                 {false, true,  true},
                 {true,  true,  false},
-            }, 3, 'S', 0, 0, green);
+            }, 3, 'S', 3, 18, ConsoleColor.Green);
             models['Z'] = new Tetrimino(new bool[3, 3]{
                 {false, false, false},
                 {true,  true,  false},
                 {false, true,  true},
-            }, 3, 'Z', 0, 0, red);
+            }, 3, 'Z', 3, 18, ConsoleColor.Red);
             models['L'] = new Tetrimino(new bool[3, 3]{
                 {false, false, false},
                 {false, false, true},
                 {true,  true,  true},
-            }, 3, 'L', 0, 0, orange);
+            }, 3, 'L', 3, 18, ConsoleColor.DarkYellow);
             models['J'] = new Tetrimino(new bool[3, 3]{
                 {false, false, false},
                 {true,  false, false},
                 {true,  true,  true},
-            }, 3, 'J', 0, 0, darkblue);
+            }, 3, 'J', 3, 18, ConsoleColor.DarkBlue);
             models['o'] = new Tetrimino(new bool[2, 2]{
                 {true, true},
                 {true, true},
-            }, 2, 'O', 0, 0, yellow);
+            }, 2, 'O', 4, 19, ConsoleColor.Yellow);
+
+            nextQueue = new Queue<Tetrimino>();
+            nextQueue.Enqueue(models['I']);
+            nextQueue.Enqueue(models['T']);
+
+            
         }
 
         protected override long Play()
@@ -1298,6 +1330,10 @@ namespace TimeKiller
             timer.Elapsed += BlockDownEvent;
 
             timer.Start();
+
+            PrintMatrix();
+            AddNewBlock();
+
             while (true)
             {
                 if (Console.KeyAvailable)
@@ -1324,6 +1360,7 @@ namespace TimeKiller
                 Console.Write("|");
                 foreach (int j in Enumerable.Range(0, WIDTH))
                     Console.Write("" + matrix[j, i] + ' ');
+                    
                 Console.WriteLine("|");
             }
             foreach (int i in Enumerable.Range(0, 23))
@@ -1331,9 +1368,20 @@ namespace TimeKiller
             Console.WriteLine("■□");
         }
 
+        private void AddNewBlock()
+        {
+            current = nextQueue.Peek();
+            nextQueue.Dequeue();
+        }
+
+        public static Tuple<int, int> GetCursorPosition(int x, int y)
+        {
+            return new Tuple<int, int> (x * 2 + 2, y);
+        }
+
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
         {
-            PrintMatrix();
+            current.Print();
         }        
     }
 }
