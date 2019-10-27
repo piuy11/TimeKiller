@@ -1235,11 +1235,13 @@ namespace TimeKiller
             return isBlock[x + checkX, y + checkY];
         }
 
-        public void Print()
+        public void Print(char c)
         {
             int cursorX = Console.CursorLeft, cursorY = Console.CursorTop;
-            // Console.Write("x : {0}, y : {1}", Console.CursorLeft, Console.CursorTop);
 
+            // Console.WriteLine("{0}, {1}", cursorX, cursorY);
+
+            // Erase printed blocks before
             foreach (int i in Enumerable.Range(0, size))
             {
                 var pos = Tetris.GetCursorPosition(x + i, y - 1);
@@ -1261,7 +1263,7 @@ namespace TimeKiller
                             continue;
                         Console.SetCursorPosition(pos.Item1, pos.Item2);
                         Console.ForegroundColor = color;
-                        Console.Write('■');
+                        Console.Write(c);
                         Console.ResetColor();
                     }
                 }
@@ -1271,7 +1273,8 @@ namespace TimeKiller
             // Console.CursorTop  = cursorY;
             // Console.SetCursorPosition(cursorX, cursorY);
             // Console.Write("x : {0}, y : {1}", Console.CursorLeft, Console.CursorTop);
-            Console.SetCursorPosition(cursorX, cursorY);
+            Console.SetCursorPosition(cursorY, cursorX);
+            
         }
 
         public void Down()
@@ -1301,7 +1304,7 @@ namespace TimeKiller
                 foreach (int j in Enumerable.Range(0, LENGTH))
                     matrix[i, j] = '.';
             }
-
+            // x, y changed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             models = new Dictionary<char, Tetrimino>();
             models['I'] = new Tetrimino(new bool[4, 4]{
                 {false, false, false, false},
@@ -1334,7 +1337,7 @@ namespace TimeKiller
                 {true,  false, false},
                 {true,  true,  true},
             }, 3, 'J', 3, 18, ConsoleColor.DarkBlue);
-            models['o'] = new Tetrimino(new bool[2, 2]{
+            models['O'] = new Tetrimino(new bool[2, 2]{
                 {true, true},
                 {true, true},
             }, 2, 'O', 4, 19, ConsoleColor.Yellow);
@@ -1342,6 +1345,11 @@ namespace TimeKiller
             nextQueue = new Queue<Tetrimino>();
             nextQueue.Enqueue(models['I']);
             nextQueue.Enqueue(models['T']);
+            nextQueue.Enqueue(models['O']);
+            nextQueue.Enqueue(models['J']);
+            nextQueue.Enqueue(models['L']);
+            nextQueue.Enqueue(models['S']);
+            nextQueue.Enqueue(models['Z']);
 
             
         }
@@ -1360,8 +1368,9 @@ namespace TimeKiller
             {
                 if (Console.KeyAvailable)
                 {
-                    var key = Console.ReadKey(true);
-                    Console.WriteLine(key.Key);
+                    var input = Console.ReadKey(true).Key;
+                    if (input == ConsoleKey.Enter)
+                        AddNewBlock();
                 }
             }
             
@@ -1387,7 +1396,6 @@ namespace TimeKiller
             }
             foreach (int i in Enumerable.Range(0, 23))
                 Console.Write("-");
-            Console.WriteLine("■□");
         }
 
         private void AddNewBlock()
@@ -1403,8 +1411,9 @@ namespace TimeKiller
 
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
         {
+            current.Print('.');
             current.Down();
-            current.Print();
+            current.Print('■');
         }        
     }
 }
