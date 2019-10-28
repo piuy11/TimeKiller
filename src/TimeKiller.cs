@@ -1432,15 +1432,9 @@ namespace TimeKiller
             }, 2, 'O', 4, 18, ConsoleColor.Yellow);
 
             nextQueue = new Queue<Tetrimino>();
-            nextQueue.Enqueue(models['I']);
-            nextQueue.Enqueue(models['T']);
-            nextQueue.Enqueue(models['O']);
-            nextQueue.Enqueue(models['J']);
-            nextQueue.Enqueue(models['L']);
-            nextQueue.Enqueue(models['S']);
-            nextQueue.Enqueue(models['Z']);
-
-            current = nextQueue.Peek();
+            current = null;
+            AddQueue();
+            AddNewBlock();
             nextQueue.Dequeue();
         }
 
@@ -1514,7 +1508,27 @@ namespace TimeKiller
 
         private void AddNewBlock()
         {
-            current.SaveToMatrix();
+            if (current != null)
+                current.SaveToMatrix();
+            
+            for (int j = 0; j < LENGTH; ++j)
+            {
+                for (int i = 0; i < WIDTH; ++i)
+                {
+                    if (matrix[i, j].c != '■')
+                        break;
+                    else if (i == WIDTH - 1) {
+                        for (int y = j; y >= 1; --y)
+                        {
+                            for (int x = 0; x < WIDTH; ++x)
+                                matrix[x, y] = matrix[x, y - 1];
+                        }
+                        for (int x = 0; x < WIDTH; ++x)
+                            matrix[x, 0] = new Cell('.', ConsoleColor.White);
+                    }
+                }
+            }
+
             current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
             if (nextQueue.Count == 1)
@@ -1533,7 +1547,7 @@ namespace TimeKiller
 
         public static Tuple<int, int> GetCursorPosition(int x, int y)
         {
-            return new Tuple<int, int> ( x * 2 + 2, y - 15);
+            return new Tuple<int, int> ( x * 2 + 2, y - 20);
         }
 
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
