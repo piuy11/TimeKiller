@@ -1207,7 +1207,7 @@ namespace TimeKiller
     ■□
     */
 
-    class Tetrimino
+    class Tetrimino : ICloneable
     {
         bool[,] isBlock;
         readonly int size;
@@ -1225,6 +1225,18 @@ namespace TimeKiller
             this.x = x;
             this.y = y;
             this.color = color;
+        }
+
+        public object Clone()
+        {
+            bool[,] newIsBlock = new bool[size, size];
+            foreach (int i in Enumerable.Range(0, size))
+            {
+                foreach (int j in Enumerable.Range(0, size))
+                    newIsBlock[i, j] = isBlock[i, j];
+            }
+            Tetrimino newTet = new Tetrimino(game, newIsBlock, size, name, x, y, color);
+            return newTet;
         }
 
         public void RotateClockwise()
@@ -1503,13 +1515,25 @@ namespace TimeKiller
         private void AddNewBlock()
         {
             current.SaveToMatrix();
-            current = nextQueue.Peek();
+            current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
+            if (nextQueue.Count == 1)
+                AddQueue();
+        }
+
+        private void AddQueue()
+        {
+            var values = models.Values;
+
+            Random randomSeed = new Random();
+            var randomizedArray = values.OrderBy(x => randomSeed.Next()).ToArray();
+            foreach (var tet in randomizedArray)
+                nextQueue.Enqueue(tet);
         }
 
         public static Tuple<int, int> GetCursorPosition(int x, int y)
         {
-            return new Tuple<int, int> ( x * 2 + 2, y - 20);
+            return new Tuple<int, int> ( x * 2 + 2, y - 15);
         }
 
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
