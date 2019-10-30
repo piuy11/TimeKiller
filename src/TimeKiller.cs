@@ -1604,12 +1604,13 @@ namespace TimeKiller
                     break;
                 }
             }
-            PrintMatrix();            
 
             current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
             if (nextQueue.Count == 1)
                 AddQueue();
+
+            PrintMatrix();
         }
 
         private void AddQueue()
@@ -1624,7 +1625,7 @@ namespace TimeKiller
 
         public static Tuple<int, int> GetCursorPosition(int x, int y)
         {
-            return new Tuple<int, int> ( x * 2 + 2, y - 20);
+            return new Tuple<int, int> (x * 2 + 2, y - 20);
         }
 
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
@@ -1633,3 +1634,18 @@ namespace TimeKiller
         }        
     }
 }
+
+/*
+
+TO-DO List
+1. BlockDownEvent와 Move가 겹치면 블럭 잔상이 남음
+2. 사망
+3. T-spin 등 점수 관련
+4. Enter 눌러야 다음 블럭으로 넘어감
+5. Esc 누르면 Pause 기능
+6. 미리보기 기능 (Ghost Piece)
+
+* SRS 추가? (안할수도)
+
+가이드라인 링크
+https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?dl=0
