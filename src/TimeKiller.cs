@@ -1227,6 +1227,16 @@ namespace TimeKiller
             this.color = color;
         }
 
+        public char GetName()
+        {
+            return name;
+        }
+
+        public ConsoleColor GetColor()
+        {
+            return color;
+        }
+
         public object Clone()
         {
             bool[,] newIsBlock = new bool[size, size];
@@ -1241,49 +1251,77 @@ namespace TimeKiller
 
         public void RotateClockwise()
         {
+            Print('.', ConsoleColor.White);
 
+            bool[,] newIsBlock = new bool[size, size];
+            foreach (int i in Enumerable.Range(0, size))
+            {
+                foreach (int j in Enumerable.Range(0, size))
+                    newIsBlock[j, size - i - 1] = isBlock[i, j];
+            }
+
+            var temp = isBlock;
+            isBlock = newIsBlock;
+            if (CheckCollision() == true)
+                isBlock = temp;
+
+            Print('■', color);
         }
 
         public void RotateCounterClockwise()
         {
+            Print('.', ConsoleColor.White);
+
+            bool[,] newIsBlock = new bool[size, size];
+            foreach (int i in Enumerable.Range(0, size))
+            {
+                foreach (int j in Enumerable.Range(0, size))
+                    newIsBlock[size - j - 1, i] = isBlock[i, j];
+            }
             
+            var temp = isBlock;
+            isBlock = newIsBlock;
+            if (CheckCollision() == true)
+                isBlock = temp;
+            
+            Print('■', color);
         }
 
         public void MoveLeft()
         {
-            Print('.');
+            Print('.', ConsoleColor.White);
             x--;
             if (CheckCollision() == true)
                 x++;
-            Print('■');
+            Print('■', color);
         }
 
         public void MoveRight()
         {
-            Print('.');
+            Print('.', ConsoleColor.White);
             x++;
             if (CheckCollision() == true)
                 x--;
-            Print('■');
+            Print('■', color);
         }
 
         public void MoveDown()
         {
-            Print('.');
+            Print('.', ConsoleColor.White);
             do {
                 y++;
             } while (CheckCollision() == false);
             y--;
-            Print('■');
+            Print('■', color);
         }
 
         public void Down()
         {
-            Print('.');
+            Print('.', ConsoleColor.White);
             y++;
             if (CheckCollision() == true)
                 y--;
-            Print('■');
+            Print('■', color);
         }
 
         public bool CheckCollision()
@@ -1310,37 +1348,22 @@ namespace TimeKiller
             return isBlock[x + checkX, y + checkY];
         }
 
-        public void Print(char c)
+        public void PrintCoord(char c, int coordX, int coordY, ConsoleColor printingColor)
         {
-            int cursorX = Console.CursorLeft, cursorY = Console.CursorTop;
-
             foreach (int i in Enumerable.Range(0, size))
             {
                 foreach (int j in Enumerable.Range(0, size))
                 {
-                    if (isBlock[i, j]) {
-                        var pos = Tetris.GetCursorPosition(x + i, y + j);
-                        // Console.Write("position : {0}, {1}", x + i, y + j);
-                        // Console.Write("cursor : {0}, {1}", pos.Item1, pos.Item2);
-                        if (pos.Item1 < 0 || pos.Item2 < 0)
-                            continue;
-                        Console.SetCursorPosition(pos.Item1, pos.Item2);
-                        if (c != '.')
-                            Console.ForegroundColor = color;
-                        Console.Write(c);
-                        if (c != '.')
-                            Console.ResetColor();
-                    }
+                    if (isBlock[i, j])
+                        game.PrintBlock(c, coordX + i, coordY + j, printingColor);
                 }
             }
-
-            // Console.CursorLeft = cursorX;
-            // Console.CursorTop  = cursorY;
-            // Console.SetCursorPosition(cursorX, cursorY);
-            // Console.Write("x : {0}, y : {1}", Console.CursorLeft, Console.CursorTop);
-            Console.SetCursorPosition(cursorY, cursorX);
-            
         }
+
+        public void Print(char c, ConsoleColor printingColor)
+        {
+            PrintCoord(c, x, y, printingColor);
+        }        
 
         public void SaveToMatrix()
         {
@@ -1375,6 +1398,8 @@ namespace TimeKiller
     class Tetris : GameWithScoreboard
     {
         public const int WIDTH = 10, LENGTH = 40;
+        long score;
+        int level;
         Cell[,] matrix;
         Tetrimino current;
         Queue<Tetrimino> nextQueue;
@@ -1387,6 +1412,8 @@ namespace TimeKiller
 
         protected override void ResetGame()
         {
+            score = 0;
+            level = 1;
             matrix = new Cell[WIDTH, LENGTH];
             foreach (int i in Enumerable.Range(0, WIDTH))
             {
@@ -1466,6 +1493,12 @@ namespace TimeKiller
                     case ConsoleKey.DownArrow:
                         current.MoveDown();
                         break;
+                    case ConsoleKey.Z:
+                        current.RotateClockwise();
+                        break;
+                    case ConsoleKey.X:
+                        current.RotateCounterClockwise();
+                        break;
                     case ConsoleKey.Enter:
                         AddNewBlock();
                         break;
@@ -1504,6 +1537,29 @@ namespace TimeKiller
             }
             foreach (int i in Enumerable.Range(0, 23))
                 Console.Write("-");
+            Console.WriteLine("\n\nLevel : " + level);
+            Console.WriteLine("Score : " + score);
+
+            Console.WriteLine("\nNext");
+            var model = nextQueue.Peek();
+            model.PrintCoord('■', -1, 46, model.GetColor());
+        }
+
+        public void PrintBlock(char c, int x, int y, ConsoleColor color = ConsoleColor.White)
+        {
+            int cursorX = Console.CursorLeft, cursorY = Console.CursorTop;
+
+            var pos = GetCursorPosition(x, y);
+            
+            if (pos.Item1 < 0 || pos.Item2 < 0)
+                return;
+            Console.SetCursorPosition(pos.Item1, pos.Item2);
+
+            Console.ForegroundColor = color;
+            Console.Write(c);
+            Console.ResetColor();
+            
+            Console.SetCursorPosition(cursorY, cursorX);
         }
 
         private void AddNewBlock()
@@ -1511,6 +1567,7 @@ namespace TimeKiller
             if (current != null)
                 current.SaveToMatrix();
             
+            int erasedLines = 0;
             for (int j = 0; j < LENGTH; ++j)
             {
                 for (int i = 0; i < WIDTH; ++i)
@@ -1518,6 +1575,7 @@ namespace TimeKiller
                     if (matrix[i, j].c != '■')
                         break;
                     else if (i == WIDTH - 1) {
+                        erasedLines++;
                         for (int y = j; y >= 1; --y)
                         {
                             for (int x = 0; x < WIDTH; ++x)
@@ -1528,6 +1586,25 @@ namespace TimeKiller
                     }
                 }
             }
+
+            if (erasedLines != 0) {
+                switch (erasedLines)
+                {
+                case 1:
+                    score += level * 100;
+                    break;
+                case 2:
+                    score += level * 300;
+                    break;
+                case 3:
+                    score += level * 500;
+                    break;
+                case 4:
+                    score += level * 800;
+                    break;
+                }
+            }
+            PrintMatrix();            
 
             current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
