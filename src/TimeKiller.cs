@@ -1249,8 +1249,18 @@ namespace TimeKiller
             return newTet;
         }
 
+        private void WaitUI()
+        {
+            while (game.isUIBeingUsed)
+            {
+                Thread.Sleep(10);
+            }
+            game.isUIBeingUsed = true;
+        }
+
         public void RotateClockwise()
         {
+            WaitUI();
             Print('.', ConsoleColor.White);
 
             bool[,] newIsBlock = new bool[size, size];
@@ -1266,10 +1276,12 @@ namespace TimeKiller
                 isBlock = temp;
 
             Print('■', color);
+            game.isUIBeingUsed = false;
         }
 
         public void RotateCounterClockwise()
         {
+            WaitUI();
             Print('.', ConsoleColor.White);
 
             bool[,] newIsBlock = new bool[size, size];
@@ -1285,43 +1297,52 @@ namespace TimeKiller
                 isBlock = temp;
             
             Print('■', color);
+            game.isUIBeingUsed = false;
         }
 
         public void MoveLeft()
         {
+            WaitUI();
             Print('.', ConsoleColor.White);
             x--;
             if (CheckCollision() == true)
                 x++;
             Print('■', color);
+            game.isUIBeingUsed = false;
         }
 
         public void MoveRight()
         {
+            WaitUI();
             Print('.', ConsoleColor.White);
             x++;
             if (CheckCollision() == true)
                 x--;
             Print('■', color);
+            game.isUIBeingUsed = false;
         }
 
         public void MoveDown()
         {
+            WaitUI();
             Print('.', ConsoleColor.White);
             do {
                 y++;
             } while (CheckCollision() == false);
             y--;
             Print('■', color);
+            game.isUIBeingUsed = false;
         }
 
         public void Down()
         {
+            WaitUI();
             Print('.', ConsoleColor.White);
             y++;
             if (CheckCollision() == true)
                 y--;
             Print('■', color);
+            game.isUIBeingUsed = false;
         }
 
         public bool CheckCollision()
@@ -1398,6 +1419,7 @@ namespace TimeKiller
     class Tetris : GameWithScoreboard
     {
         public const int WIDTH = 10, LENGTH = 40;
+        public bool isUIBeingUsed { get; set; }
         long score;
         int level;
         Cell[,] matrix;
@@ -1412,6 +1434,7 @@ namespace TimeKiller
 
         protected override void ResetGame()
         {
+            isUIBeingUsed = false;
             score = 0;
             level = 1;
             matrix = new Cell[WIDTH, LENGTH];
@@ -1461,19 +1484,21 @@ namespace TimeKiller
             nextQueue = new Queue<Tetrimino>();
             current = null;
             AddQueue();
-            AddNewBlock();
+            current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
+            // nextQueue.Dequeue();
         }
 
         protected override long Play()
         {
-            System.Timers.Timer blockDownTimer = new System.Timers.Timer(1000);
+            System.Timers.Timer blockDownTimer = new System.Timers.Timer(500);
             blockDownTimer.Elapsed += BlockDownEvent;
 
             PrintMatrix();
 
             blockDownTimer.Start();
 
+            bool isPaused = false;
             while (true)
             {
                 if (Console.KeyAvailable)
@@ -1502,17 +1527,27 @@ namespace TimeKiller
                     case ConsoleKey.Enter:
                         AddNewBlock();
                         break;
+                    case ConsoleKey.Escape:
+                        blockDownTimer.Stop();
+                        Paused();
+                        blockDownTimer.Start();
+                        break;
                     }
                 }
             }
             
             blockDownTimer.Stop();
-            blockDownTimer.Dispose();
             
-            // inputTask.Dispose();
             Console.WriteLine("End!");
+            Console.ReadKey(true);
 
             return 0;
+        }
+
+        private void Paused()
+        {
+            while (Console.ReadKey(true).Key != ConsoleKey.Escape)
+            {}
         }
 
         public Cell GetCell(int x, int y)
@@ -1649,3 +1684,4 @@ TO-DO List
 
 가이드라인 링크
 https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?dl=0
+*/
