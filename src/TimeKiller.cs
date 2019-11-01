@@ -1277,7 +1277,7 @@ namespace TimeKiller
                     break;
                 case ConsoleKey.UpArrow:
                     Hold();
-                    break;
+                    return;
                 case ConsoleKey.DownArrow:
                     MoveDown();
                     break;
@@ -1551,6 +1551,7 @@ namespace TimeKiller
                     if (input == ConsoleKey.Escape) {
                         blockDownTimer.Stop();
                         Paused();
+                        PrintMatrix();
                         blockDownTimer.Start();
                     }
                     else {
@@ -1571,7 +1572,6 @@ namespace TimeKiller
         {
             if (isHoldUsed)
                 return;
-
             
             if (holding == ' ') {
                 holding = current.GetName();
@@ -1588,6 +1588,9 @@ namespace TimeKiller
 
         private void Paused()
         {
+            Console.Clear();
+            Console.WriteLine("PAUSED!");
+            Console.WriteLine("Press Esc Key To Continue");
             while (Console.ReadKey(true).Key != ConsoleKey.Escape)
             {}
         }
@@ -1641,6 +1644,18 @@ namespace TimeKiller
         {
             if (isHoldUsed == false)
                 current.SaveToMatrix();
+
+            bool isDead = false;
+            for (int myX = 0; myX < LENGTH; ++myX)
+            {
+                if (matrix[myX, 19].c != '.') {
+                    isDead = true;
+                    break;
+                }
+            }
+            if (isDead)
+                return;
+                
             
             int erasedLines = 0;
             for (int j = 0; j < LENGTH; ++j)
@@ -1714,10 +1729,17 @@ namespace TimeKiller
 /*
 
 TO-DO List
-1. BlockDownEvent와 Move가 겹치면 블럭 잔상이 남음
-2. 사망
+
+2. 사망 처리
 3. T-spin 등 점수 관련
 4. Enter 눌러야 다음 블럭으로 넘어감
+4-1. 바닥에 닿았을 시의 상태에서 회전시 그 상태를 벗어날 가능성 있음
+7. 키 설명 추가/표시
+8. Soft Drop 추가 (x20 spd)
+
+
+Solved List
+1. BlockDownEvent와 Move가 겹치면 블럭 잔상이 남음
 5. Esc 누르면 Pause 기능
 6. 미리보기 기능 (Ghost Piece)
 
