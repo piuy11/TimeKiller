@@ -1217,7 +1217,7 @@ namespace TimeKiller
         bool[,] isBlock;
         int x, y;
         ConsoleColor color;
-        bool isOnGround;
+        public bool isOnGround { get; set; }
         System.Timers.Timer halfSecondWaiter;
 
         public Tetrimino(Tetris game, bool[,] isBlock, int size, char name, int x, int y, ConsoleColor color)
@@ -1294,7 +1294,10 @@ namespace TimeKiller
                 while (CheckCollision() == false)
                     y++;
                 y--;
-                Print('□', color);
+                if (currentY == y)
+                    isOnGround = true;
+                else
+                    Print('□', color);
                 y = currentY;
                 Print('■', color);
             }
@@ -1456,6 +1459,8 @@ namespace TimeKiller
     class Tetris : GameWithScoreboard
     {
         public const int WIDTH = 10, LENGTH = 40;
+        const char defalultHoldingChar = ' ';
+
         long score;
         int level;
         Cell[,] matrix;
@@ -1479,7 +1484,7 @@ namespace TimeKiller
         {
             score = 0;
             level = 1;
-            holding = ' ';
+            holding = defalultHoldingChar;
             isHoldUsed = false;
             isDead = false;
             matrix = new Cell[WIDTH, LENGTH];
@@ -1561,7 +1566,7 @@ namespace TimeKiller
                         current.Move(input);
                         if (current.isOnGround) {
                             blockDownTimer.Stop();
-
+                            addNewTimer.Start();
                         }
 
                     }
@@ -1581,7 +1586,7 @@ namespace TimeKiller
             if (isHoldUsed)
                 return;
             
-            if (holding == ' ') {
+            if (holding == defalultHoldingChar) {
                 holding = current.GetName();
                 isHoldUsed = true;
                 AddNewBlock();
@@ -1626,7 +1631,7 @@ namespace TimeKiller
             Console.WriteLine("\nNext        Hold");
             var model = nextQueue.Peek();
             model.PrintCoord('■', -1, 46, model.GetColor());
-            if (holding != ' ')
+            if (holding != defalultHoldingChar)
                 models[holding].PrintCoord('■', 5, 46, models[holding].GetColor());
                 
         }
@@ -1664,7 +1669,7 @@ namespace TimeKiller
             if (isDead)
                 return true;
                 
-            
+            // erase fulled lines
             int erasedLines = 0;
             for (int j = 0; j < LENGTH; ++j)
             {
@@ -1685,6 +1690,7 @@ namespace TimeKiller
                 }
             }
 
+            // scoring
             if (erasedLines != 0) {
                 switch (erasedLines)
                 {
