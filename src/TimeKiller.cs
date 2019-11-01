@@ -1209,22 +1209,28 @@ namespace TimeKiller
 
     class Tetrimino : ICloneable
     {
-        bool[,] isBlock;
         readonly int size;
         readonly char name;
+
+        object lockObject = new object();
+        Tetris game;
+        bool[,] isBlock;
         int x, y;
         ConsoleColor color;
-        Tetris game;
+        bool isOnGround;
+        System.Timers.Timer halfSecondWaiter;
 
         public Tetrimino(Tetris game, bool[,] isBlock, int size, char name, int x, int y, ConsoleColor color)
         {
-            this.game = game;
-            this.isBlock = isBlock;
             this.size = size;
             this.name = name;
+
+            this.game = game;
+            this.isBlock = isBlock;
             this.x = x;
             this.y = y;
             this.color = color;
+            this.isOnGround = false;
         }
 
         public char GetName()
@@ -1249,20 +1255,58 @@ namespace TimeKiller
             return newTet;
         }
 
-        private void WaitUI()
+        public void Move(ConsoleKey input)
         {
-            while (game.isUIBeingUsed)
+            lock (lockObject)
             {
-                Thread.Sleep(10);
+                Print('.', ConsoleColor.White);
+                int currentY = y;
+                while (CheckCollision() == false)
+                    y++;
+                y--;
+                Print('.', ConsoleColor.White);
+                y = currentY;
+
+                switch (input)
+                {
+                case ConsoleKey.LeftArrow:
+                    MoveLeft();
+                    break;
+                case ConsoleKey.RightArrow:
+                    MoveRight();
+                    break;
+                case ConsoleKey.UpArrow:
+                    Hold();
+                    break;
+                case ConsoleKey.DownArrow:
+                    MoveDown();
+                    break;
+                case ConsoleKey.Z:
+                    RotateClockwise();
+                    break;
+                case ConsoleKey.X:
+                    RotateCounterClockwise();
+                    break;
+                    
+                }
+
+                currentY = y;
+                while (CheckCollision() == false)
+                    y++;
+                y--;
+                Print('□', color);
+                y = currentY;
+                Print('■', color);
             }
-            game.isUIBeingUsed = true;
+        }
+
+        public void Hold()
+        {
+            game.Hold();
         }
 
         public void RotateClockwise()
         {
-            WaitUI();
-            Print('.', ConsoleColor.White);
-
             bool[,] newIsBlock = new bool[size, size];
             foreach (int i in Enumerable.Range(0, size))
             {
@@ -1274,16 +1318,10 @@ namespace TimeKiller
             isBlock = newIsBlock;
             if (CheckCollision() == true)
                 isBlock = temp;
-
-            Print('■', color);
-            game.isUIBeingUsed = false;
         }
 
         public void RotateCounterClockwise()
         {
-            WaitUI();
-            Print('.', ConsoleColor.White);
-
             bool[,] newIsBlock = new bool[size, size];
             foreach (int i in Enumerable.Range(0, size))
             {
@@ -1294,55 +1332,54 @@ namespace TimeKiller
             var temp = isBlock;
             isBlock = newIsBlock;
             if (CheckCollision() == true)
-                isBlock = temp;
-            
-            Print('■', color);
-            game.isUIBeingUsed = false;
+                isBlock = temp;          
         }
 
         public void MoveLeft()
         {
-            WaitUI();
-            Print('.', ConsoleColor.White);
             x--;
             if (CheckCollision() == true)
-                x++;
-            Print('■', color);
-            game.isUIBeingUsed = false;
+                x++;   
         }
 
         public void MoveRight()
         {
-            WaitUI();
-            Print('.', ConsoleColor.White);
             x++;
             if (CheckCollision() == true)
-                x--;
-            Print('■', color);
-            game.isUIBeingUsed = false;
+                x--;  
         }
 
         public void MoveDown()
         {
-            WaitUI();
-            Print('.', ConsoleColor.White);
-            do {
+            while (CheckCollision() == false)
                 y++;
-            } while (CheckCollision() == false);
-            y--;
-            Print('■', color);
-            game.isUIBeingUsed = false;
+            y--; 
         }
 
         public void Down()
         {
-            WaitUI();
-            Print('.', ConsoleColor.White);
-            y++;
-            if (CheckCollision() == true)
+            lock (lockObject)
+            {
+                Print('.', ConsoleColor.White);
+                int currentY = y;
+                while (CheckCollision() == false)
+                    y++;
                 y--;
-            Print('■', color);
-            game.isUIBeingUsed = false;
+                Print('.', ConsoleColor.White);
+                y = currentY;
+
+                y++;
+                if (CheckCollision() == true)
+                    y--;
+                
+                currentY = y;
+                while (CheckCollision() == false)
+                    y++;
+                y--;
+                Print('□', color);
+                y = currentY;
+                Print('■', color);
+            }
         }
 
         public bool CheckCollision()
@@ -1419,13 +1456,19 @@ namespace TimeKiller
     class Tetris : GameWithScoreboard
     {
         public const int WIDTH = 10, LENGTH = 40;
-        public bool isUIBeingUsed { get; set; }
         long score;
         int level;
         Cell[,] matrix;
         Tetrimino current;
         Queue<Tetrimino> nextQueue;
         Dictionary<char, Tetrimino> models;
+        char holding;
+        bool isHoldUsed;
+
+        public Cell GetCell(int x, int y)
+        {
+            return matrix[x, y];
+        }
 
         protected override string GetLogPath(bool isMonthScore)
         {
@@ -1434,9 +1477,10 @@ namespace TimeKiller
 
         protected override void ResetGame()
         {
-            isUIBeingUsed = false;
             score = 0;
             level = 1;
+            holding = ' ';
+            isHoldUsed = false;
             matrix = new Cell[WIDTH, LENGTH];
             foreach (int i in Enumerable.Range(0, WIDTH))
             {
@@ -1504,34 +1548,13 @@ namespace TimeKiller
                 if (Console.KeyAvailable)
                 {
                     var input = Console.ReadKey(true).Key;
-                    switch (input)
-                    {
-                    case ConsoleKey.LeftArrow:
-                        current.MoveLeft();
-                        break;
-                    case ConsoleKey.RightArrow:
-                        current.MoveRight();
-                        break;
-                    case ConsoleKey.UpArrow:
-                        // current.MoveUp();
-                        break;
-                    case ConsoleKey.DownArrow:
-                        current.MoveDown();
-                        break;
-                    case ConsoleKey.Z:
-                        current.RotateClockwise();
-                        break;
-                    case ConsoleKey.X:
-                        current.RotateCounterClockwise();
-                        break;
-                    case ConsoleKey.Enter:
-                        AddNewBlock();
-                        break;
-                    case ConsoleKey.Escape:
+                    if (input == ConsoleKey.Escape) {
                         blockDownTimer.Stop();
                         Paused();
                         blockDownTimer.Start();
-                        break;
+                    }
+                    else {
+                        current.Move(input);
                     }
                 }
             }
@@ -1544,15 +1567,29 @@ namespace TimeKiller
             return 0;
         }
 
+        public void Hold()
+        {
+            if (isHoldUsed)
+                return;
+
+            
+            if (holding == ' ') {
+                holding = current.GetName();
+                isHoldUsed = true;
+                AddNewBlock();
+            }
+            else {
+                char temp = current.GetName();
+                current = (Tetrimino)models[holding].Clone();
+                holding = temp;
+            }
+            isHoldUsed = true;
+        }
+
         private void Paused()
         {
             while (Console.ReadKey(true).Key != ConsoleKey.Escape)
             {}
-        }
-
-        public Cell GetCell(int x, int y)
-        {
-            return matrix[x, y];
         }
 
         private void PrintMatrix()
@@ -1575,9 +1612,12 @@ namespace TimeKiller
             Console.WriteLine("\n\nLevel : " + level);
             Console.WriteLine("Score : " + score);
 
-            Console.WriteLine("\nNext");
+            Console.WriteLine("\nNext        Hold");
             var model = nextQueue.Peek();
             model.PrintCoord('■', -1, 46, model.GetColor());
+            if (holding != ' ')
+                models[holding].PrintCoord('■', 5, 46, models[holding].GetColor());
+                
         }
 
         public void PrintBlock(char c, int x, int y, ConsoleColor color = ConsoleColor.White)
@@ -1599,7 +1639,7 @@ namespace TimeKiller
 
         private void AddNewBlock()
         {
-            if (current != null)
+            if (isHoldUsed == false)
                 current.SaveToMatrix();
             
             int erasedLines = 0;
@@ -1644,6 +1684,7 @@ namespace TimeKiller
             nextQueue.Dequeue();
             if (nextQueue.Count == 1)
                 AddQueue();
+            isHoldUsed = false;
 
             PrintMatrix();
         }
