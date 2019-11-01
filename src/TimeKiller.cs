@@ -1463,7 +1463,7 @@ namespace TimeKiller
         Queue<Tetrimino> nextQueue;
         Dictionary<char, Tetrimino> models;
         char holding;
-        bool isHoldUsed;
+        bool isHoldUsed, isDead;
 
         public Cell GetCell(int x, int y)
         {
@@ -1481,6 +1481,7 @@ namespace TimeKiller
             level = 1;
             holding = ' ';
             isHoldUsed = false;
+            isDead = false;
             matrix = new Cell[WIDTH, LENGTH];
             foreach (int i in Enumerable.Range(0, WIDTH))
             {
@@ -1535,8 +1536,10 @@ namespace TimeKiller
 
         protected override long Play()
         {
-            System.Timers.Timer blockDownTimer = new System.Timers.Timer(500);
+            System.Timers.Timer blockDownTimer = new System.Timers.Timer(500); // change
             blockDownTimer.Elapsed += BlockDownEvent;
+            System.Timers.Timer addNewTimer = new System.Timers.Timer(500);
+            addNewTimer.Elapsed += AddNewBlockEvent;
 
             PrintMatrix();
 
@@ -1556,6 +1559,11 @@ namespace TimeKiller
                     }
                     else {
                         current.Move(input);
+                        if (current.isOnGround) {
+                            blockDownTimer.Stop();
+
+                        }
+
                     }
                 }
             }
@@ -1640,12 +1648,12 @@ namespace TimeKiller
             Console.SetCursorPosition(cursorY, cursorX);
         }
 
-        private void AddNewBlock()
+        private bool AddNewBlock()
         {
             if (isHoldUsed == false)
                 current.SaveToMatrix();
 
-            bool isDead = false;
+            isDead = false;
             for (int myX = 0; myX < LENGTH; ++myX)
             {
                 if (matrix[myX, 19].c != '.') {
@@ -1654,7 +1662,7 @@ namespace TimeKiller
                 }
             }
             if (isDead)
-                return;
+                return true;
                 
             
             int erasedLines = 0;
@@ -1702,6 +1710,13 @@ namespace TimeKiller
             isHoldUsed = false;
 
             PrintMatrix();
+
+            return false;
+        }
+
+        private void AddNewBlockEvent(object source, ElapsedEventArgs e)
+        {
+            isDead = AddNewBlock();
         }
 
         private void AddQueue()
@@ -1735,7 +1750,8 @@ TO-DO List
 4. Enter 눌러야 다음 블럭으로 넘어감
 4-1. 바닥에 닿았을 시의 상태에서 회전시 그 상태를 벗어날 가능성 있음
 7. 키 설명 추가/표시
-8. Soft Drop 추가 (x20 spd)
+8. Soft Drop 추가 (x20 spd, DownArrow key)
+9. Hard Drop 키 변경 (Space Key)
 
 
 Solved List
