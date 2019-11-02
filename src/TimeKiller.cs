@@ -1212,7 +1212,6 @@ namespace TimeKiller
         readonly int size;
         readonly char name;
 
-        object lockObject = new object();
         Tetris game;
         bool[,] isBlock;
         int x, y;
@@ -1257,50 +1256,49 @@ namespace TimeKiller
 
         public void Move(ConsoleKey input)
         {
-            lock (lockObject)
+            isOnGround = false;
+
+            Print('.', ConsoleColor.White);
+            int currentY = y;
+            while (CheckCollision() == false)
+                y++;
+            y--;
+            Print('.', ConsoleColor.White);
+            y = currentY;
+
+            switch (input)
             {
-                Print('.', ConsoleColor.White);
-                int currentY = y;
-                while (CheckCollision() == false)
-                    y++;
-                y--;
-                Print('.', ConsoleColor.White);
-                y = currentY;
-
-                switch (input)
-                {
-                case ConsoleKey.LeftArrow:
-                    MoveLeft();
-                    break;
-                case ConsoleKey.RightArrow:
-                    MoveRight();
-                    break;
-                case ConsoleKey.UpArrow:
-                    Hold();
-                    return;
-                case ConsoleKey.DownArrow:
-                    MoveDown();
-                    break;
-                case ConsoleKey.Z:
-                    RotateClockwise();
-                    break;
-                case ConsoleKey.X:
-                    RotateCounterClockwise();
-                    break;
-                    
-                }
-
-                currentY = y;
-                while (CheckCollision() == false)
-                    y++;
-                y--;
-                if (currentY == y)
-                    isOnGround = true;
-                else
-                    Print('□', color);
-                y = currentY;
-                Print('■', color);
+            case ConsoleKey.LeftArrow:
+                MoveLeft();
+                break;
+            case ConsoleKey.RightArrow:
+                MoveRight();
+                break;
+            case ConsoleKey.UpArrow:
+                Hold();
+                return;
+            case ConsoleKey.DownArrow:
+                MoveDown();
+                break;
+            case ConsoleKey.Z:
+                RotateClockwise();
+                break;
+            case ConsoleKey.X:
+                RotateCounterClockwise();
+                break;
+                
             }
+
+            currentY = y;
+            while (CheckCollision() == false)
+                y++;
+            y--;
+            if (currentY == y)
+                isOnGround = true;
+            else
+                Print('□', color);
+            y = currentY;
+            Print('■', color);
         }
 
         public void Hold()
@@ -1361,28 +1359,25 @@ namespace TimeKiller
 
         public void Down()
         {
-            lock (lockObject)
-            {
-                Print('.', ConsoleColor.White);
-                int currentY = y;
-                while (CheckCollision() == false)
-                    y++;
-                y--;
-                Print('.', ConsoleColor.White);
-                y = currentY;
-
+            Print('.', ConsoleColor.White);
+            int currentY = y;
+            while (CheckCollision() == false)
                 y++;
-                if (CheckCollision() == true)
-                    y--;
-                
-                currentY = y;
-                while (CheckCollision() == false)
-                    y++;
+            y--;
+            Print('.', ConsoleColor.White);
+            y = currentY;
+
+            y++;
+            if (CheckCollision() == true)
                 y--;
-                Print('□', color);
-                y = currentY;
-                Print('■', color);
-            }
+            
+            currentY = y;
+            while (CheckCollision() == false)
+                y++;
+            y--;
+            Print('□', color);
+            y = currentY;
+            Print('■', color);
         }
 
         public bool CheckCollision()
@@ -1460,6 +1455,7 @@ namespace TimeKiller
     {
         public const int WIDTH = 10, LENGTH = 40;
         const char defalultHoldingChar = ' ';
+        object lockObject = new object();
 
         long score;
         int level;
@@ -1469,6 +1465,8 @@ namespace TimeKiller
         Dictionary<char, Tetrimino> models;
         char holding;
         bool isHoldUsed, isDead;
+        System.Timers.Timer blockDownTimer, addNewTimer, currentTimer;
+
 
         public Cell GetCell(int x, int y)
         {
@@ -1536,18 +1534,18 @@ namespace TimeKiller
             AddQueue();
             current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
-            // nextQueue.Dequeue();
+            
+            blockDownTimer = new System.Timers.Timer(500); // change interval
+            blockDownTimer.Elapsed += BlockDownEvent;
+            addNewTimer = new System.Timers.Timer(500);
+            addNewTimer.Elapsed += AddNewBlockEvent;
+            addNewTimer.AutoReset = false;
         }
 
         protected override long Play()
         {
-            System.Timers.Timer blockDownTimer = new System.Timers.Timer(500); // change
-            blockDownTimer.Elapsed += BlockDownEvent;
-            System.Timers.Timer addNewTimer = new System.Timers.Timer(500);
-            addNewTimer.Elapsed += AddNewBlockEvent;
-
             PrintMatrix();
-
+            currentTimer = blockDownTimer;
             blockDownTimer.Start();
 
             bool isPaused = false;
@@ -1563,19 +1561,29 @@ namespace TimeKiller
                         blockDownTimer.Start();
                     }
                     else {
-                        current.Move(input);
-                        if (current.isOnGround) {
+                        lock (lockObject)
+                        {
+                            current.Move(input);
+                        }
+                        if (current.isOnGround && currentTimer == blockDownTimer) {
                             blockDownTimer.Stop();
                             addNewTimer.Start();
+                            currentTimer = addNewTimer;
                         }
-
+                        else if (current.isOnGround == false && currentTimer == addNewTimer) {
+                            addNewTimer.Stop();
+                            blockDownTimer.Start();                            
+                            currentTimer = blockDownTimer;
+                        }
                     }
                 }
             }
             
             blockDownTimer.Stop();
+            addNewTimer.Stop();
             
-            Console.WriteLine("End!");
+            Console.WriteLine("You Dead!");
+            Console.WriteLine("Score : " + score);
             Console.ReadKey(true);
 
             return 0;
@@ -1655,11 +1663,13 @@ namespace TimeKiller
 
         private bool AddNewBlock()
         {
+            lock (lockObject) {
+
             if (isHoldUsed == false)
                 current.SaveToMatrix();
 
             isDead = false;
-            for (int myX = 0; myX < LENGTH; ++myX)
+            for (int myX = 0; myX < WIDTH; ++myX)
             {
                 if (matrix[myX, 19].c != '.') {
                     isDead = true;
@@ -1707,6 +1717,10 @@ namespace TimeKiller
                     score += level * 800;
                     break;
                 }
+                }
+
+                blockDownTimer.Start();
+                currentTimer = blockDownTimer;
             }
 
             current = (Tetrimino)(nextQueue.Peek()).Clone();
@@ -1722,6 +1736,7 @@ namespace TimeKiller
 
         private void AddNewBlockEvent(object source, ElapsedEventArgs e)
         {
+            throw new Exception();
             isDead = AddNewBlock();
         }
 
@@ -1742,7 +1757,11 @@ namespace TimeKiller
 
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
         {
-            current.Down();
+            lock (lockObject)
+            {
+                current.Down();
+            }
+            Console.WriteLine(current.isOnGround);
         }        
     }
 }
