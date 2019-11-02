@@ -1736,7 +1736,6 @@ namespace TimeKiller
 
         private void AddNewBlockEvent(object source, ElapsedEventArgs e)
         {
-            throw new Exception();
             isDead = AddNewBlock();
         }
 
@@ -1761,7 +1760,6 @@ namespace TimeKiller
             {
                 current.Down();
             }
-            Console.WriteLine(current.isOnGround);
         }        
     }
 }
@@ -1770,13 +1768,16 @@ namespace TimeKiller
 
 TO-DO List
 
-2. 사망 처리
+2. 사망 처리 -> solved?
 3. T-spin 등 점수 관련
 4. Enter 눌러야 다음 블럭으로 넘어감
 4-1. 바닥에 닿았을 시의 상태에서 회전시 그 상태를 벗어날 가능성 있음
 7. 키 설명 추가/표시
 8. Soft Drop 추가 (x20 spd, DownArrow key)
 9. Hard Drop 키 변경 (Space Key)
+10. isOnGround가 Down에서 수정되게
+11. Hold시 저장(SaveMatrix)이 안됨..! + Hold칸 이미지 수정이 안됨
+12. 리펙토링
 
 
 Solved List
