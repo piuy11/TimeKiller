@@ -1277,10 +1277,13 @@ namespace TimeKiller
 
         public void Move(Action move)
         {
-            isOnGround = false;
-            EraseTrace();
-            move();
-            PrintTrace();
+            lock (lockObject)
+            {
+                isOnGround = false;
+                EraseTrace();
+                move();
+                PrintTrace();
+            }
         }
 
         public void RotateClockwise()
@@ -1533,28 +1536,32 @@ namespace TimeKiller
                     else {
                         lock (lockObject)
                         {
+                            if (input == ConsoleKey.UpArrow) {
+                                Hold();
+                                continue;
+                            }
+
+                            Action move;
                             switch (input)
                             {
                             case ConsoleKey.LeftArrow:
-                                current.MoveLeft();
+                                move = current.MoveLeft;
                                 break;
                             case ConsoleKey.RightArrow:
-                                current.MoveRight();
-                                break;
-                            case ConsoleKey.UpArrow:
-                                Hold();
+                                move = current.MoveRight;
                                 break;
                             case ConsoleKey.DownArrow:
-                                current.MoveDown();
+                                move = current.MoveDown;
                                 break;
                             case ConsoleKey.Z:
-                                current.RotateClockwise();
+                                move = current.RotateClockwise;
                                 break;
                             case ConsoleKey.X:
-                                current.RotateCounterClockwise();
+                                move = current.RotateCounterClockwise;
                                 break;
                             }
                         }
+
                         if (current.isOnGround && currentTimer == blockDownTimer) {
                             blockDownTimer.Stop();
                             addNewTimer.Start();
@@ -1762,10 +1769,7 @@ namespace TimeKiller
 
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
         {
-            lock (lockObject)
-            {
-                current.Down();
-            }
+            move(current.Down);
         }        
     }
 }
