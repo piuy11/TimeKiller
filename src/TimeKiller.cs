@@ -1277,13 +1277,10 @@ namespace TimeKiller
 
         public void Move(Action move)
         {
-            lock (lockObject)
-            {
-                isOnGround = false;
-                EraseTrace();
-                move();
-                PrintTrace();
-            }
+            isOnGround = false;
+            EraseTrace();
+            move();
+            PrintTrace();
         }
 
         public void RotateClockwise()
@@ -1339,13 +1336,9 @@ namespace TimeKiller
 
         public void Down()
         {
-            EraseTrace();           
-
             y++;
             if (CheckCollision() == true)
                 y--;
-
-            PrintTrace();
         }
 
         public bool CheckCollision()
@@ -1541,7 +1534,7 @@ namespace TimeKiller
                                 continue;
                             }
 
-                            Action move;
+                            Action move = null;
                             switch (input)
                             {
                             case ConsoleKey.LeftArrow:
@@ -1559,7 +1552,10 @@ namespace TimeKiller
                             case ConsoleKey.X:
                                 move = current.RotateCounterClockwise;
                                 break;
+                            default:
+                                continue;
                             }
+                            current.Move(move);
                         }
 
                         if (current.isOnGround && currentTimer == blockDownTimer) {
@@ -1769,7 +1765,10 @@ namespace TimeKiller
 
         private void BlockDownEvent(Object source, ElapsedEventArgs e)
         {
-            move(current.Down);
+            lock (lockObject)
+            {
+                current.Move(current.Down);
+            }
         }        
     }
 }
