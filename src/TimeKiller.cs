@@ -2,10 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Timers;
-using System.Windows.Input;
 
 namespace General
 {
@@ -1253,10 +1250,8 @@ namespace TimeKiller
             return newTet;
         }
 
-        public void Move(ConsoleKey input)
+        public void EraseTrace()
         {
-            isOnGround = false;
-
             Print('.', ConsoleColor.White);
             int currentY = y;
             while (CheckCollision() == false)
@@ -1264,6 +1259,13 @@ namespace TimeKiller
             y--;
             Print('.', ConsoleColor.White);
             y = currentY;
+        }
+
+        public void Move(ConsoleKey input)
+        {
+            isOnGround = false;
+
+            
 
             switch (input)
             {
@@ -1358,6 +1360,8 @@ namespace TimeKiller
 
         public void Down()
         {
+            isOnGround = false;
+            
             Print('.', ConsoleColor.White);
             int currentY = y;
             while (CheckCollision() == false)
@@ -1374,7 +1378,10 @@ namespace TimeKiller
             while (CheckCollision() == false)
                 y++;
             y--;
-            Print('□', color);
+            if (currentY == y)
+                isOnGround = true;
+            else
+                Print('□', color);
             y = currentY;
             Print('■', color);
         }
@@ -1396,11 +1403,6 @@ namespace TimeKiller
                 }
             }
             return false;
-        }
-
-        public bool CheckOnGround()
-        {
-
         }
 
         public bool CheckBlock(int checkX, int checkY)
@@ -1470,6 +1472,8 @@ namespace TimeKiller
         char holding;
         bool isHoldUsed, isDead;
         System.Timers.Timer blockDownTimer, addNewTimer, currentTimer;
+        string scoredInfo;
+        int scoredBefore;
 
 
         public Cell GetCell(int x, int y)
@@ -1489,6 +1493,9 @@ namespace TimeKiller
             holding = defalultHoldingChar;
             isHoldUsed = false;
             isDead = false;
+            scoredInfo = "";
+            scoredBefore = 0;
+
             matrix = new Cell[WIDTH, LENGTH];
             foreach (int i in Enumerable.Range(0, WIDTH))
             {
@@ -1539,7 +1546,7 @@ namespace TimeKiller
             current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
             
-            blockDownTimer = new System.Timers.Timer(500); // change interval
+            blockDownTimer = new System.Timers.Timer(100); // change interval
             blockDownTimer.Elapsed += BlockDownEvent;
             addNewTimer = new System.Timers.Timer(500);
             addNewTimer.Elapsed += AddNewBlockEvent;
@@ -1601,7 +1608,7 @@ namespace TimeKiller
             if (holding == defalultHoldingChar) {
                 holding = current.GetName();
                 isHoldUsed = true;
-                AddNewBlock();
+                AddNewBlock(false);
             }
             else {
                 char temp = current.GetName();
@@ -1609,6 +1616,8 @@ namespace TimeKiller
                 holding = temp;
             }
             isHoldUsed = true;
+
+            PrintMatrix();
         }
 
         private void Paused()
@@ -1645,6 +1654,12 @@ namespace TimeKiller
             model.PrintCoord('■', -1, 46, model.GetColor());
             if (holding != defalultHoldingChar)
                 models[holding].PrintCoord('■', 5, 46, models[holding].GetColor());
+            
+            Console.SetCursorPosition(0, 29);
+            if (scoredInfo != "") {
+                Console.WriteLine(scoredInfo + "!");
+                Console.WriteLine("+ " + scoredBefore);
+            }
                 
         }
 
@@ -1665,11 +1680,11 @@ namespace TimeKiller
             Console.SetCursorPosition(cursorY, cursorX);
         }
 
-        private bool AddNewBlock()
+        private bool AddNewBlock(bool doSave = true)
         {
             lock (lockObject) {
 
-            if (isHoldUsed == false)
+            if (doSave)
                 current.SaveToMatrix();
 
             isDead = false;
@@ -1709,16 +1724,24 @@ namespace TimeKiller
                 switch (erasedLines)
                 {
                 case 1:
-                    score += level * 100;
+                    scoredBefore = level * 100;
+                    scoredInfo = "Single";
+                    score += scoredBefore;
                     break;
                 case 2:
-                    score += level * 300;
+                    scoredBefore = level * 300;
+                    scoredInfo = "Double";
+                    score += scoredBefore;
                     break;
                 case 3:
-                    score += level * 500;
+                    scoredBefore = level * 500;
+                    scoredInfo = "Triple";
+                    score += scoredBefore;
                     break;
                 case 4:
-                    score += level * 800;
+                    scoredBefore = level * 800;
+                    scoredInfo = "Tetris";
+                    score += scoredBefore;
                     break;
                 }
                 }
@@ -1740,7 +1763,7 @@ namespace TimeKiller
 
         private void AddNewBlockEvent(object source, ElapsedEventArgs e)
         {
-            isDead = AddNewBlock();
+            AddNewBlock();
         }
 
         private void AddQueue()
@@ -1772,7 +1795,9 @@ namespace TimeKiller
 
 lock 대상 :
 Move종류 전부
+Down
 AddNewBlock
+
 
 TO-DO List
 
@@ -1783,10 +1808,10 @@ TO-DO List
 8. Soft Drop 추가 (x20 spd, DownArrow key)
 9. Hard Drop 키 변경 (Space Key)
 10. isOnGround가 Down에서 수정되게
-11. Hold시 저장(SaveMatrix)이 안됨..! + Hold칸 이미지 수정이 안됨 
--> AddNewBlock에서 걸러서 그럼 + PrintMatrix 추가
 12. 리펙토링
 13. MoveDown시 바로 AddNewBlock (타이머 x)
+14. level 증가, level마다 Interval 감소
+15. score 저장기능
 
 
 Solved List
@@ -1795,6 +1820,7 @@ Solved List
 4. Enter 눌러야 다음 블럭으로 넘어감
 5. Esc 누르면 Pause 기능
 6. 미리보기 기능 (Ghost Piece)
+11. Hold시 저장(SaveMatrix)이 안됨..! + Hold칸 이미지 수정이 안됨 
 
 * SRS 추가? (안할수도)
 
