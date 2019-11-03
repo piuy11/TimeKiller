@@ -1261,36 +1261,9 @@ namespace TimeKiller
             y = currentY;
         }
 
-        public void Move(ConsoleKey input)
+        public void PrintTrace()
         {
-            isOnGround = false;
-
-            
-
-            switch (input)
-            {
-            case ConsoleKey.LeftArrow:
-                MoveLeft();
-                break;
-            case ConsoleKey.RightArrow:
-                MoveRight();
-                break;
-            case ConsoleKey.UpArrow:
-                Hold();
-                return;
-            case ConsoleKey.DownArrow:
-                MoveDown();
-                break;
-            case ConsoleKey.Z:
-                RotateClockwise();
-                break;
-            case ConsoleKey.X:
-                RotateCounterClockwise();
-                break;
-                
-            }
-
-            currentY = y;
+            int currentY = y;
             while (CheckCollision() == false)
                 y++;
             y--;
@@ -1302,9 +1275,12 @@ namespace TimeKiller
             Print('■', color);
         }
 
-        public void Hold()
+        public void Move(Action move)
         {
-            game.Hold();
+            isOnGround = false;
+            EraseTrace();
+            move();
+            PrintTrace();
         }
 
         public void RotateClockwise()
@@ -1334,7 +1310,7 @@ namespace TimeKiller
             var temp = isBlock;
             isBlock = newIsBlock;
             if (CheckCollision() == true)
-                isBlock = temp;          
+                isBlock = temp;
         }
 
         public void MoveLeft()
@@ -1360,30 +1336,13 @@ namespace TimeKiller
 
         public void Down()
         {
-            isOnGround = false;
-            
-            Print('.', ConsoleColor.White);
-            int currentY = y;
-            while (CheckCollision() == false)
-                y++;
-            y--;
-            Print('.', ConsoleColor.White);
-            y = currentY;
+            EraseTrace();           
 
             y++;
             if (CheckCollision() == true)
                 y--;
-            
-            currentY = y;
-            while (CheckCollision() == false)
-                y++;
-            y--;
-            if (currentY == y)
-                isOnGround = true;
-            else
-                Print('□', color);
-            y = currentY;
-            Print('■', color);
+
+            PrintTrace();
         }
 
         public bool CheckCollision()
@@ -1574,7 +1533,27 @@ namespace TimeKiller
                     else {
                         lock (lockObject)
                         {
-                            current.Move(input);
+                            switch (input)
+                            {
+                            case ConsoleKey.LeftArrow:
+                                current.MoveLeft();
+                                break;
+                            case ConsoleKey.RightArrow:
+                                current.MoveRight();
+                                break;
+                            case ConsoleKey.UpArrow:
+                                Hold();
+                                break;
+                            case ConsoleKey.DownArrow:
+                                current.MoveDown();
+                                break;
+                            case ConsoleKey.Z:
+                                current.RotateClockwise();
+                                break;
+                            case ConsoleKey.X:
+                                current.RotateCounterClockwise();
+                                break;
+                            }
                         }
                         if (current.isOnGround && currentTimer == blockDownTimer) {
                             blockDownTimer.Stop();
