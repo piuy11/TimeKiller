@@ -1501,7 +1501,7 @@ namespace TimeKiller
             current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
             
-            blockDownTimer = new System.Timers.Timer(100); // change interval
+            blockDownTimer = new System.Timers.Timer(70); // change interval
             blockDownTimer.Elapsed += BlockDownEvent;
             addNewTimer = new System.Timers.Timer(500);
             addNewTimer.Elapsed += AddNewBlockEvent;
@@ -1557,18 +1557,17 @@ namespace TimeKiller
                             }
                             current.Move(move);
                         }
-
-                        if (current.isOnGround && currentTimer == blockDownTimer) {
-                            blockDownTimer.Stop();
-                            addNewTimer.Start();
-                            currentTimer = addNewTimer;
-                        }
-                        else if (current.isOnGround == false && currentTimer == addNewTimer) {
-                            addNewTimer.Stop();
-                            blockDownTimer.Start();                            
-                            currentTimer = blockDownTimer;
-                        }
                     }
+                }
+                if (current.isOnGround && currentTimer == blockDownTimer) {
+                    blockDownTimer.Stop();
+                    addNewTimer.Start();
+                    currentTimer = addNewTimer;
+                }
+                else if (current.isOnGround == false && currentTimer == addNewTimer) {
+                    addNewTimer.Stop();
+                    blockDownTimer.Start();                            
+                    currentTimer = blockDownTimer;
                 }
             }
             
