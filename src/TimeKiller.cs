@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Timers;
+using System.Threading;
 
 namespace General
 {
@@ -1524,7 +1525,7 @@ namespace TimeKiller
             blockDownTimer.Start();
 
             bool isPaused = false;
-            while (true)
+            while (isDead == false)
             {
                 if (Console.KeyAvailable)
                 {
@@ -1568,11 +1569,13 @@ namespace TimeKiller
                 }
 
                 if (current.isOnGround && currentTimer == blockDownTimer) {
+                    // 바닥 착지했을시
                     blockDownTimer.Stop();
                     addNewTimer.Start();
                     currentTimer = addNewTimer;
                 }
-                else if (current.isOnGround == false && currentTimer == addNewTimer) {
+                else if (current.isOnGround == false && currentTimer == addNewTimer) { 
+                    // isOnGround에서 회전 등으로 벗어났을 때
                     addNewTimer.Stop();
                     blockDownTimer.Start();                            
                     currentTimer = blockDownTimer;
@@ -1586,7 +1589,7 @@ namespace TimeKiller
             Console.WriteLine("Score : " + score);
             Console.ReadKey(true);
 
-            return 0;
+            return score;
         }
 
         public void Hold()
@@ -1674,10 +1677,8 @@ namespace TimeKiller
             Console.SetCursorPosition(cursorY, cursorX);
         }
 
-        private bool AddNewBlock(bool doSave = true)
+        private void AddNewBlock(bool doSave = true)
         {
-            lock (lockObject) {
-
             if (doSave)
                 current.SaveToMatrix();
 
@@ -1690,7 +1691,7 @@ namespace TimeKiller
                 }
             }
             if (isDead)
-                return true;
+                return;
                 
             // erase fulled lines
             int erasedLines = 0;
@@ -1738,11 +1739,10 @@ namespace TimeKiller
                     score += scoredBefore;
                     break;
                 }
-                }
-
-                blockDownTimer.Start();
-                currentTimer = blockDownTimer;
             }
+
+            blockDownTimer.Start();
+            currentTimer = blockDownTimer;
 
             current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
@@ -1752,7 +1752,7 @@ namespace TimeKiller
 
             PrintMatrix();
             actionQueue.Clear();
-            return false;
+            return;
         }
 
         private void AddNewBlockEvent(object source, ElapsedEventArgs e)
@@ -1791,25 +1791,24 @@ namespace TimeKiller
 /*
 
 lock 대상 :
-Move종류 전부
-Down
-AddNewBlock
+actionQueue에 넣는 동작만
 
 
 TO-DO List
 
+* SRS 추가? (안할수도)
 2. 사망 처리
 3. T-spin 등 점수 관련
 4-1. 바닥에 닿았을 시의 상태에서 회전시 그 상태를 벗어날 가능성 있음
 7. 키 설명 추가/표시
 8. Soft Drop 추가 (x20 spd, DownArrow key)
 9. Hard Drop 키 변경 (Space Key)
-10. isOnGround가 Down에서 수정되게
 12. 리펙토링
 13. MoveDown시 바로 AddNewBlock (타이머 x)
 14. level 증가, level마다 Interval 감소
 15. score 저장기능
-16. action queue
+17. MoveDown시 이후에 가끔 조금 내려가고 바로 저장됨.
+-> AddNewBlock 이후 actionQueue.Clear 실행으로 고쳐졌을수도?
 
 
 Solved List
@@ -1818,9 +1817,10 @@ Solved List
 4. Enter 눌러야 다음 블럭으로 넘어감
 5. Esc 누르면 Pause 기능
 6. 미리보기 기능 (Ghost Piece)
-11. Hold시 저장(SaveMatrix)이 안됨..! + Hold칸 이미지 수정이 안됨 
+10. isOnGround가 Down에서 수정되게
+11. Hold시 저장(SaveMatrix)이 안됨..! + Hold칸 이미지 수정이 안됨
+16. action queue
 
-* SRS 추가? (안할수도)
 
 가이드라인 링크
 https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?dl=0
