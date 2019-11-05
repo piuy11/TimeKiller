@@ -1426,7 +1426,7 @@ namespace TimeKiller
         Queue<Tetrimino> nextQueue;
         Dictionary<char, Tetrimino> models;
         char holding;
-        bool isHoldUsed, isDead;
+        bool isHoldUsed, isDead, isOnSoftDrop;
         System.Timers.Timer blockDownTimer, addNewTimer, currentTimer;
         string scoredInfo;
         int scoredBefore;
@@ -1451,6 +1451,7 @@ namespace TimeKiller
             holding = defalultHoldingChar;
             isHoldUsed = false;
             isDead = false;
+            isOnSoftDrop = false;
             scoredInfo = "";
             scoredBefore = 0;
 
@@ -1510,7 +1511,7 @@ namespace TimeKiller
             actionQueue = new Queue<Action>();
             
             // Timer Initialization
-            blockDownTimer = new System.Timers.Timer(70); // change interval
+            blockDownTimer = new System.Timers.Timer(500); // change interval
             blockDownTimer.Elapsed += BlockDownEvent;
             addNewTimer = new System.Timers.Timer(500);
             addNewTimer.Elapsed += AddNewBlockEvent;
@@ -1545,6 +1546,10 @@ namespace TimeKiller
                             actionQueue.Enqueue(() => current.Move(current.MoveRight));
                             break;
                         case ConsoleKey.DownArrow:
+                            if (currentTimer == blockDownTimer)
+                                actionQueue.Enqueue(ToggleSoftDrop);
+                            break;
+                        case ConsoleKey.Spacebar:
                             actionQueue.Enqueue(() => current.Move(current.MoveDown));
                             break;
                         case ConsoleKey.Z:
@@ -1590,6 +1595,12 @@ namespace TimeKiller
             Console.ReadKey(true);
 
             return score;
+        }
+
+        private void ToggleSoftDrop()
+        {            
+            blockDownTimer.Interval = isOnSoftDrop ? blockDownTimer.Interval * 10 : blockDownTimer.Interval / 10;
+            isOnSoftDrop = !isOnSoftDrop;
         }
 
         public void Hold()
@@ -1752,6 +1763,8 @@ namespace TimeKiller
 
             PrintMatrix();
             actionQueue.Clear();
+            if (isOnSoftDrop)
+                ToggleSoftDrop();
             return;
         }
 
@@ -1801,8 +1814,6 @@ TO-DO List
 3. T-spin 등 점수 관련
 4-1. 바닥에 닿았을 시의 상태에서 회전시 그 상태를 벗어날 가능성 있음
 7. 키 설명 추가/표시
-8. Soft Drop 추가 (x20 spd, DownArrow key)
-9. Hard Drop 키 변경 (Space Key)
 12. 리펙토링
 13. MoveDown시 바로 AddNewBlock (타이머 x)
 14. level 증가, level마다 Interval 감소
@@ -1817,6 +1828,8 @@ Solved List
 4. Enter 눌러야 다음 블럭으로 넘어감
 5. Esc 누르면 Pause 기능
 6. 미리보기 기능 (Ghost Piece)
+8. Soft Drop 추가 (x20 spd, DownArrow key)
+9. Hard Drop 키 변경 (Space Key)
 10. isOnGround가 Down에서 수정되게
 11. Hold시 저장(SaveMatrix)이 안됨..! + Hold칸 이미지 수정이 안됨
 16. action queue
