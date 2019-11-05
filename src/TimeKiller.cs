@@ -1429,6 +1429,7 @@ namespace TimeKiller
         System.Timers.Timer blockDownTimer, addNewTimer, currentTimer;
         string scoredInfo;
         int scoredBefore;
+        Queue<Action> actionQueue;
 
 
         public Cell GetCell(int x, int y)
@@ -1443,6 +1444,7 @@ namespace TimeKiller
 
         protected override void ResetGame()
         {
+            // variables Initialization
             score = 0;
             level = 1;
             holding = defalultHoldingChar;
@@ -1451,13 +1453,15 @@ namespace TimeKiller
             scoredInfo = "";
             scoredBefore = 0;
 
+            // matrix Intialization
             matrix = new Cell[WIDTH, LENGTH];
             foreach (int i in Enumerable.Range(0, WIDTH))
             {
                 foreach (int j in Enumerable.Range(0, LENGTH))
                     matrix[i, j] = new Cell('.', ConsoleColor.White);
             }
-            // x, y changed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            
+            // models Initialization
             models = new Dictionary<char, Tetrimino>();
             models['I'] = new Tetrimino(this, new bool[4, 4]{
                 {false, true,  false, false},
@@ -1495,17 +1499,22 @@ namespace TimeKiller
                 {true, true},
             }, 2, 'O', 4, 18, ConsoleColor.Yellow);
 
+            // queue Initialization
             nextQueue = new Queue<Tetrimino>();
             current = null;
             AddQueue();
             current = (Tetrimino)(nextQueue.Peek()).Clone();
             nextQueue.Dequeue();
+
+            actionQueue = new Queue<Action>();
             
+            // Timer Initialization
             blockDownTimer = new System.Timers.Timer(70); // change interval
             blockDownTimer.Elapsed += BlockDownEvent;
             addNewTimer = new System.Timers.Timer(500);
             addNewTimer.Elapsed += AddNewBlockEvent;
             addNewTimer.AutoReset = false;
+            currentTimer = null;
         }
 
         protected override long Play()
@@ -1520,45 +1529,44 @@ namespace TimeKiller
                 if (Console.KeyAvailable)
                 {
                     var input = Console.ReadKey(true).Key;
-                    if (input == ConsoleKey.Escape) {
-                        blockDownTimer.Stop();
-                        Paused();
-                        PrintMatrix();
-                        blockDownTimer.Start();
-                    }
-                    else {
-                        lock (lockObject)
-                        {
-                            if (input == ConsoleKey.UpArrow) {
-                                Hold();
-                                continue;
-                            }
 
-                            Action move = null;
-                            switch (input)
-                            {
-                            case ConsoleKey.LeftArrow:
-                                move = current.MoveLeft;
-                                break;
-                            case ConsoleKey.RightArrow:
-                                move = current.MoveRight;
-                                break;
-                            case ConsoleKey.DownArrow:
-                                move = current.MoveDown;
-                                break;
-                            case ConsoleKey.Z:
-                                move = current.RotateClockwise;
-                                break;
-                            case ConsoleKey.X:
-                                move = current.RotateCounterClockwise;
-                                break;
-                            default:
-                                continue;
-                            }
-                            current.Move(move);
+                    lock (lockObject)
+                    {
+                        switch (input)
+                        {
+                        case ConsoleKey.UpArrow:
+                            actionQueue.Enqueue(Hold);
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            actionQueue.Enqueue(() => current.Move(current.MoveLeft));
+                            break;
+                        case ConsoleKey.RightArrow:
+                            actionQueue.Enqueue(() => current.Move(current.MoveRight));
+                            break;
+                        case ConsoleKey.DownArrow:
+                            actionQueue.Enqueue(() => current.Move(current.MoveDown));
+                            break;
+                        case ConsoleKey.Z:
+                            actionQueue.Enqueue(() => current.Move(current.RotateClockwise));
+                            break;
+                        case ConsoleKey.X:
+                            actionQueue.Enqueue(() => current.Move(current.RotateCounterClockwise));
+                            break;
+                        case ConsoleKey.Escape:
+                            actionQueue.Enqueue(Pause);
+                            break;
                         }
                     }
                 }
+
+                while (actionQueue.Count != 0)
+                {
+                    var action = actionQueue.Peek();
+                    action();
+                    if (actionQueue.Count != 0)
+                        actionQueue.Dequeue();
+                }
+
                 if (current.isOnGround && currentTimer == blockDownTimer) {
                     blockDownTimer.Stop();
                     addNewTimer.Start();
@@ -1601,13 +1609,18 @@ namespace TimeKiller
             PrintMatrix();
         }
 
-        private void Paused()
+        private void Pause()
         {
+            currentTimer.Stop();
+
             Console.Clear();
             Console.WriteLine("PAUSED!");
             Console.WriteLine("Press Esc Key To Continue");
             while (Console.ReadKey(true).Key != ConsoleKey.Escape)
             {}
+
+            PrintMatrix();
+            currentTimer.Start();
         }
 
         private void PrintMatrix()
@@ -1738,13 +1751,16 @@ namespace TimeKiller
             isHoldUsed = false;
 
             PrintMatrix();
-
+            actionQueue.Clear();
             return false;
         }
 
         private void AddNewBlockEvent(object source, ElapsedEventArgs e)
         {
-            AddNewBlock();
+            lock (lockObject)
+            {
+                actionQueue.Enqueue(() => AddNewBlock(true));
+            }
         }
 
         private void AddQueue()
@@ -1766,9 +1782,9 @@ namespace TimeKiller
         {
             lock (lockObject)
             {
-                current.Move(current.Down);
+                actionQueue.Enqueue(() => current.Move(current.Down));
             }
-        }        
+        }
     }
 }
 
@@ -1793,6 +1809,7 @@ TO-DO List
 13. MoveDown시 바로 AddNewBlock (타이머 x)
 14. level 증가, level마다 Interval 감소
 15. score 저장기능
+16. action queue
 
 
 Solved List
