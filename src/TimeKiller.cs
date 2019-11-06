@@ -1332,7 +1332,7 @@ namespace TimeKiller
         {
             while (CheckCollision() == false)
                 y++;
-            y--; 
+            y--;
         }
 
         public void Down()
@@ -1420,7 +1420,7 @@ namespace TimeKiller
         object lockObject = new object();
 
         long score;
-        int level;
+        int level, linesLeft;
         Cell[,] matrix;
         Tetrimino current;
         Queue<Tetrimino> nextQueue;
@@ -1447,7 +1447,8 @@ namespace TimeKiller
         {
             // variables Initialization
             score = 0;
-            level = 1;
+            level = 0;
+            linesLeft = 10;
             holding = defalultHoldingChar;
             isHoldUsed = false;
             isDead = false;
@@ -1511,7 +1512,7 @@ namespace TimeKiller
             actionQueue = new Queue<Action>();
             
             // Timer Initialization
-            blockDownTimer = new System.Timers.Timer(500); // change interval
+            blockDownTimer = new System.Timers.Timer(); // change interval
             blockDownTimer.Elapsed += BlockDownEvent;
             addNewTimer = new System.Timers.Timer(500);
             addNewTimer.Elapsed += AddNewBlockEvent;
@@ -1521,6 +1522,22 @@ namespace TimeKiller
 
         protected override long Play()
         {
+            while ((level >= 1 && level <= 15) == false)
+            {
+                Console.Clear();
+                Console.Write("시작 레벨 : ");
+                try {
+                    level = Int32.Parse(Console.ReadLine());
+                } catch (FormatException) {
+
+                }
+            }
+            blockDownTimer.Interval = GetSpeed();
+            if (level == 15)
+                linesLeft = 0;
+            else
+                linesLeft = level * 10;
+            
             PrintMatrix();
             currentTimer = blockDownTimer;
             blockDownTimer.Start();
@@ -1550,7 +1567,11 @@ namespace TimeKiller
                                 actionQueue.Enqueue(ToggleSoftDrop);
                             break;
                         case ConsoleKey.Spacebar:
-                            actionQueue.Enqueue(() => current.Move(current.MoveDown));
+                            actionQueue.Enqueue(() => {
+                                current.Move(current.MoveDown);
+                                Thread.Sleep(500);
+                                AddNewBlock();
+                            });
                             break;
                         case ConsoleKey.Z:
                             actionQueue.Enqueue(() => current.Move(current.RotateClockwise));
@@ -1654,21 +1675,23 @@ namespace TimeKiller
             }
             foreach (int i in Enumerable.Range(0, 23))
                 Console.Write("-");
-            Console.WriteLine("\n\nLevel : " + level);
-            Console.WriteLine("Score : " + score);
+            Console.WriteLine("\n\n레벨 : " + level);
+            Console.WriteLine("점수 : " + score);
+            Console.WriteLine("남은 라인 수 : " + linesLeft);
 
             Console.WriteLine("\nNext        Hold");
             var model = nextQueue.Peek();
-            model.PrintCoord('■', -1, 46, model.GetColor());
+            model.PrintCoord('■', -1, 47, model.GetColor());
             if (holding != defalultHoldingChar)
-                models[holding].PrintCoord('■', 5, 46, models[holding].GetColor());
+                models[holding].PrintCoord('■', 5, 47, models[holding].GetColor());
             
-            Console.SetCursorPosition(0, 29);
+            //Console.SetCursor
+            
+            Console.SetCursorPosition(0, 30);
             if (scoredInfo != "") {
                 Console.WriteLine(scoredInfo + "!");
                 Console.WriteLine("+ " + scoredBefore);
             }
-                
         }
 
         public void PrintBlock(char c, int x, int y, ConsoleColor color = ConsoleColor.White)
@@ -1686,6 +1709,11 @@ namespace TimeKiller
             Console.ResetColor();
             
             Console.SetCursorPosition(cursorY, cursorX);
+        }
+
+        public int GetSpeed()
+        {
+            return (int)(Math.Pow(0.8 - ((level - 1) * 0.007), level - 1) * 1000);
         }
 
         private void AddNewBlock(bool doSave = true)
@@ -1750,6 +1778,19 @@ namespace TimeKiller
                     score += scoredBefore;
                     break;
                 }
+                
+                if (level != 15) {
+                    linesLeft -= erasedLines;
+                    if (linesLeft <= 0) {
+                        level++;
+                        blockDownTimer.Interval = GetSpeed();
+                        if (level == 15)
+                            linesLeft = 0;
+                        else
+                            linesLeft += 10;
+                    }
+                }
+                
             }
 
             blockDownTimer.Start();
@@ -1810,29 +1851,31 @@ actionQueue에 넣는 동작만
 TO-DO List
 
 * SRS 추가? (안할수도)
-2. 사망 처리
 3. T-spin 등 점수 관련
-4-1. 바닥에 닿았을 시의 상태에서 회전시 그 상태를 벗어날 가능성 있음
 7. 키 설명 추가/표시
 12. 리펙토링
-13. MoveDown시 바로 AddNewBlock (타이머 x)
-14. level 증가, level마다 Interval 감소
-15. score 저장기능
-17. MoveDown시 이후에 가끔 조금 내려가고 바로 저장됨.
--> AddNewBlock 이후 actionQueue.Clear 실행으로 고쳐졌을수도?
+
+
 
 
 Solved List
 
 1. BlockDownEvent와 Move가 겹치면 블럭 잔상이 남음
+2. 사망 처리
 4. Enter 눌러야 다음 블럭으로 넘어감
+4-1. 바닥에 닿았을 시의 상태에서 회전시 그 상태를 벗어날 가능성 있음
 5. Esc 누르면 Pause 기능
 6. 미리보기 기능 (Ghost Piece)
 8. Soft Drop 추가 (x20 spd, DownArrow key)
 9. Hard Drop 키 변경 (Space Key)
 10. isOnGround가 Down에서 수정되게
 11. Hold시 저장(SaveMatrix)이 안됨..! + Hold칸 이미지 수정이 안됨
+13. MoveDown시 0.5초 후(이동x) 바로 AddNewBlock (타이머 x)
+14. level 증가, level마다 Interval 감소
+15. score 저장기능
 16. action queue
+17. MoveDown시 이후에 가끔 조금 내려가고 바로 저장됨.
+-> AddNewBlock 이후 actionQueue.Clear 실행으로 고쳐졌을수도?
 
 
 가이드라인 링크
