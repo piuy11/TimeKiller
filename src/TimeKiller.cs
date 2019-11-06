@@ -1685,7 +1685,20 @@ namespace TimeKiller
             if (holding != defalultHoldingChar)
                 models[holding].PrintCoord('■', 5, 47, models[holding].GetColor());
             
-            //Console.SetCursor
+            Console.SetCursorPosition(30, 0);
+            Console.Write("← → : 좌우 이동");
+            Console.SetCursorPosition(30, 1);
+            Console.Write("↓ : 빠르게 낙하");
+            Console.SetCursorPosition(30, 2);
+            Console.Write("↑ : Hold");
+            Console.SetCursorPosition(30, 3);
+            Console.Write("스페이스바 : 즉시 낙하");
+            Console.SetCursorPosition(30, 4);
+            Console.Write("Z : 시계방향 회전");
+            Console.SetCursorPosition(30, 5);
+            Console.Write("X : 시계반대방향 회전");
+            Console.SetCursorPosition(30, 6);
+            Console.Write("Esc : 일시정지");
             
             Console.SetCursorPosition(0, 30);
             if (scoredInfo != "") {
@@ -1852,7 +1865,6 @@ TO-DO List
 
 * SRS 추가? (안할수도)
 3. T-spin 등 점수 관련
-7. 키 설명 추가/표시
 12. 리펙토링
 
 
@@ -1866,6 +1878,7 @@ Solved List
 4-1. 바닥에 닿았을 시의 상태에서 회전시 그 상태를 벗어날 가능성 있음
 5. Esc 누르면 Pause 기능
 6. 미리보기 기능 (Ghost Piece)
+7. 키 설명 추가/표시
 8. Soft Drop 추가 (x20 spd, DownArrow key)
 9. Hard Drop 키 변경 (Space Key)
 10. isOnGround가 Down에서 수정되게
