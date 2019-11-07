@@ -1328,7 +1328,7 @@ namespace TimeKiller
                 x--;  
         }
 
-        public void MoveDown()
+        public void HardDrop()
         {
             while (CheckCollision() == false)
                 y++;
@@ -1427,7 +1427,7 @@ namespace TimeKiller
         Dictionary<char, Tetrimino> models;
         char holding;
         bool isHoldUsed, isDead, isOnSoftDrop;
-        System.Timers.Timer blockDownTimer, addNewTimer, currentTimer;
+        System.Timers.Timer blockDownTimer, beforeLockDownTimer, lockDownTimer, currentTimer;
         string scoredInfo;
         int scoredBefore;
         Queue<Action> actionQueue;
@@ -1514,9 +1514,12 @@ namespace TimeKiller
             // Timer Initialization
             blockDownTimer = new System.Timers.Timer(); // change interval
             blockDownTimer.Elapsed += BlockDownEvent;
-            addNewTimer = new System.Timers.Timer(500);
-            addNewTimer.Elapsed += AddNewBlockEvent;
-            addNewTimer.AutoReset = false;
+            beforeLockDownTimer = new System.Timers.Timer(500);
+            beforeLockDownTimer.Elapsed += BeforeLockDownEvent;
+            beforeLockDownTimer.AutoReset = false;
+            lockDownTimer = new System.Timers.Timer(500);
+            lockDownTimer.Elapsed += LockDownEvent;
+            lockDownTimer.AutoReset = false;
             currentTimer = null;
         }
 
@@ -1525,7 +1528,7 @@ namespace TimeKiller
             while ((level >= 1 && level <= 15) == false)
             {
                 Console.Clear();
-                Console.Write("시작 레벨 : ");
+                Console.Write("시작 레벨 (1 ~ 15) : ");
                 try {
                     level = Int32.Parse(Console.ReadLine());
                 } catch (FormatException) {
@@ -1567,11 +1570,7 @@ namespace TimeKiller
                                 actionQueue.Enqueue(ToggleSoftDrop);
                             break;
                         case ConsoleKey.Spacebar:
-                            actionQueue.Enqueue(() => {
-                                current.Move(current.MoveDown);
-                                Thread.Sleep(500);
-                                AddNewBlock();
-                            });
+                            actionQueue.Enqueue(() => current.Move(current.HardDrop));
                             break;
                         case ConsoleKey.Z:
                             actionQueue.Enqueue(() => current.Move(current.RotateClockwise));
@@ -1580,8 +1579,15 @@ namespace TimeKiller
                             actionQueue.Enqueue(() => current.Move(current.RotateCounterClockwise));
                             break;
                         case ConsoleKey.Escape:
-                            actionQueue.Enqueue(Pause);
+                            if (Pause() == true)
+                                return 0;
                             break;
+                        defalut:
+                            continue;
+                        }
+                        if (currentTimer == beforeLockDownTimer) {
+                            beforeLockDownTimer.Stop();
+                            beforeLockDownTimer.Start();
                         }
                     }
                 }
@@ -1597,19 +1603,18 @@ namespace TimeKiller
                 if (current.isOnGround && currentTimer == blockDownTimer) {
                     // 바닥 착지했을시
                     blockDownTimer.Stop();
-                    addNewTimer.Start();
-                    currentTimer = addNewTimer;
+                    beforeLockDownTimer.Start();
+                    currentTimer = beforeLockDownTimer;
                 }
-                else if (current.isOnGround == false && currentTimer == addNewTimer) { 
+                else if (current.isOnGround == false && currentTimer == beforeLockDownTimer) { 
                     // isOnGround에서 회전 등으로 벗어났을 때
-                    addNewTimer.Stop();
-                    blockDownTimer.Start();                            
+                    beforeLockDownTimer.Stop();
+                    blockDownTimer.Start();                     
                     currentTimer = blockDownTimer;
                 }
             }
             
-            blockDownTimer.Stop();
-            addNewTimer.Stop();
+            currentTimer.Stop();
             
             Console.WriteLine("You Dead!");
             Console.WriteLine("Score : " + score);
@@ -1644,18 +1649,30 @@ namespace TimeKiller
             PrintMatrix();
         }
 
-        private void Pause()
+        private bool Pause()
         {
             currentTimer.Stop();
 
             Console.Clear();
             Console.WriteLine("PAUSED!");
-            Console.WriteLine("Press Esc Key To Continue");
-            while (Console.ReadKey(true).Key != ConsoleKey.Escape)
-            {}
+            Console.WriteLine("Press Esc Key To Exit");
+            Console.WriteLine("Press Any Key To Continue");
+            var input = Console.ReadKey(true);
+            if (input.Key == ConsoleKey.Escape)
+                return true;
 
             PrintMatrix();
             currentTimer.Start();
+            return false;
+        }
+
+        private void LockDown()
+        {
+            Thread.Sleep(500);
+            lock (lockObject)
+            {
+                actionQueue.Enqueue(() => AddNewBlock(true));
+            }
         }
 
         private void PrintMatrix()
@@ -1822,14 +1839,6 @@ namespace TimeKiller
             return;
         }
 
-        private void AddNewBlockEvent(object source, ElapsedEventArgs e)
-        {
-            lock (lockObject)
-            {
-                actionQueue.Enqueue(() => AddNewBlock(true));
-            }
-        }
-
         private void AddQueue()
         {
             var values = models.Values;
@@ -1845,11 +1854,29 @@ namespace TimeKiller
             return new Tuple<int, int> (x * 2 + 2, y - 20);
         }
 
-        private void BlockDownEvent(Object source, ElapsedEventArgs e)
+        private void BlockDownEvent(object source, ElapsedEventArgs e)
         {
             lock (lockObject)
             {
                 actionQueue.Enqueue(() => current.Move(current.Down));
+            }
+        }
+
+        private void LockDownEvent(Object source, ElapsedEventArgs e)
+        {
+            lock (lockObject)
+            {
+                actionQueue.Enqueue(() => AddNewBlock(true));
+            }
+        }
+
+        private void BeforeLockDownEvent(Object source, ElapsedEventArgs e)
+        {
+            lock (lockObject)
+            {
+                actionQueue.Clear();
+                beforeLockDownTimer.Stop();
+                LockDown();
             }
         }
     }
@@ -1864,9 +1891,10 @@ actionQueue에 넣는 동작만
 TO-DO List
 
 * SRS 추가? (안할수도)
-3. T-spin 등 점수 관련
+3. Back To Back, T-spin 등 점수 관련 추가
 12. 리펙토링
-
+18. Lock Down 추가 (땅 위에 착지 후 0.5초간 못건드리는 상태)
+19. Extended Placement 추가 (땅 위에서 0.5초간 움직일 수 있음, 움직이면 리셋)
 
 
 
