@@ -1525,15 +1525,14 @@ namespace TimeKiller
 
         protected override long Play()
         {
+            // 시작 레벨 선택, 초기화
             while ((level >= 1 && level <= 15) == false)
             {
                 Console.Clear();
                 Console.Write("시작 레벨 (1 ~ 15) : ");
                 try {
                     level = Int32.Parse(Console.ReadLine());
-                } catch (FormatException) {
-
-                }
+                } catch (FormatException) {}
             }
             blockDownTimer.Interval = GetSpeed();
             if (level == 15)
@@ -1545,14 +1544,13 @@ namespace TimeKiller
             currentTimer = blockDownTimer;
             blockDownTimer.Start();
 
-            bool isPaused = false;
             while (isDead == false)
             {
-                if (Console.KeyAvailable)
+                if (Console.KeyAvailable) // ReadKey에 의한 쓰레드 멈춤 방지
                 {
                     var input = Console.ReadKey(true).Key;
 
-                    lock (lockObject)
+                    lock (lockObject) // queue가 thread-safe 하지 않음
                     {
                         switch (input)
                         {
@@ -1565,12 +1563,13 @@ namespace TimeKiller
                         case ConsoleKey.RightArrow:
                             actionQueue.Enqueue(() => current.Move(current.MoveRight));
                             break;
-                        case ConsoleKey.DownArrow:
+                        case ConsoleKey.DownArrow: // soft drop
                             if (currentTimer == blockDownTimer)
                                 actionQueue.Enqueue(ToggleSoftDrop);
                             break;
-                        case ConsoleKey.Spacebar:
+                        case ConsoleKey.Spacebar: // hard drop 후 바로 lock down이 되어야함
                             actionQueue.Enqueue(() => current.Move(current.HardDrop));
+                            actionQueue.Enqueue(LockDown);
                             break;
                         case ConsoleKey.Z:
                             actionQueue.Enqueue(() => current.Move(current.RotateClockwise));
@@ -1595,9 +1594,8 @@ namespace TimeKiller
                 while (actionQueue.Count != 0)
                 {
                     var action = actionQueue.Peek();
-                    action();
-                    if (actionQueue.Count != 0)
-                        actionQueue.Dequeue();
+                    actionQueue.Dequeue();
+                    action();                        
                 }
 
                 if (current.isOnGround && currentTimer == blockDownTimer) {
@@ -1671,6 +1669,7 @@ namespace TimeKiller
             Thread.Sleep(500);
             lock (lockObject)
             {
+                actionQueue.Clear();
                 actionQueue.Enqueue(() => AddNewBlock(true));
             }
         }
@@ -1823,6 +1822,7 @@ namespace TimeKiller
                 
             }
 
+            currentTimer.Stop();
             blockDownTimer.Start();
             currentTimer = blockDownTimer;
 
