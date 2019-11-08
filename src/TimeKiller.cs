@@ -1679,6 +1679,7 @@ namespace TimeKiller
         {
             lock (lockObject)
             {
+                Console.WriteLine("Lock Down");
                 Thread.Sleep(500);
                 actionQueue.Clear();
                 AddNewBlock();
@@ -1843,7 +1844,7 @@ namespace TimeKiller
                 AddQueue();
             isHoldUsed = false;
             timerResetCount = 0;
-            
+
             PrintMatrix();
             actionQueue.Clear();
             if (isOnSoftDrop)
@@ -1905,8 +1906,6 @@ TO-DO List
 * SRS 추가? (안할수도)
 3. Back To Back, T-spin 등 점수 관련 추가
 12. 리펙토링
-18. Lock Down 추가 (땅 위에 착지 후 0.5초간 못건드리는 상태)
-19. Extended Placement 추가 (땅 위에서 0.5초간 움직일 수 있음, 움직이면 리셋)
 
 
 
@@ -1929,6 +1928,8 @@ Solved List
 16. action queue
 17. MoveDown시 이후에 가끔 조금 내려가고 바로 저장됨.
 -> AddNewBlock 이후 actionQueue.Clear 실행으로 고쳐졌을수도?
+18. Lock Down 추가 (땅 위에 착지 후 0.5초간 못건드리는 상태)
+19. Extended Placement 추가 (땅 위에서 0.5초간 움직일 수 있음, 움직이면 리셋)
 
 
 가이드라인 링크
