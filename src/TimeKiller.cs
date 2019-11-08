@@ -1295,6 +1295,14 @@ namespace TimeKiller
 
             var temp = isBlock;
             isBlock = newIsBlock;
+            /*
+            int originX = x, originY = y;
+            while (CheckCollision() == true)
+            {
+                y--;
+                if (y == 10)
+            }
+            */
             if (CheckCollision() == true)
                 isBlock = temp;
         }
@@ -1420,7 +1428,7 @@ namespace TimeKiller
         object lockObject = new object();
 
         long score;
-        int level, linesLeft;
+        int level, linesLeft, timerResetCount;
         Cell[,] matrix;
         Tetrimino current;
         Queue<Tetrimino> nextQueue;
@@ -1448,6 +1456,7 @@ namespace TimeKiller
             // variables Initialization
             score = 0;
             level = 0;
+            timerResetCount = 0;
             linesLeft = 10;
             holding = defalultHoldingChar;
             isHoldUsed = false;
@@ -1568,6 +1577,7 @@ namespace TimeKiller
                                 actionQueue.Enqueue(ToggleSoftDrop);
                             break;
                         case ConsoleKey.Spacebar: // hard drop 후 바로 lock down이 되어야함
+                            currentTimer.Stop();
                             actionQueue.Enqueue(() => current.Move(current.HardDrop));
                             actionQueue.Enqueue(LockDown);
                             break;
@@ -1584,9 +1594,10 @@ namespace TimeKiller
                         defalut:
                             continue;
                         }
-                        if (currentTimer == beforeLockDownTimer) {
+                        if (currentTimer == beforeLockDownTimer && timerResetCount <= 15) {
                             beforeLockDownTimer.Stop();
                             beforeLockDownTimer.Start();
+                            timerResetCount++;
                         }
                     }
                 }
@@ -1666,11 +1677,11 @@ namespace TimeKiller
 
         private void LockDown()
         {
-            Thread.Sleep(500);
             lock (lockObject)
             {
+                Thread.Sleep(500);
                 actionQueue.Clear();
-                actionQueue.Enqueue(() => AddNewBlock(true));
+                AddNewBlock();
             }
         }
 
@@ -1831,7 +1842,8 @@ namespace TimeKiller
             if (nextQueue.Count == 1)
                 AddQueue();
             isHoldUsed = false;
-
+            timerResetCount = 0;
+            
             PrintMatrix();
             actionQueue.Clear();
             if (isOnSoftDrop)
