@@ -83,6 +83,7 @@ namespace TimeKiller
                 Console.WriteLine("3. 블랙홀");
                 Console.WriteLine("4. 야찌");
                 Console.WriteLine("5. 테트리스");
+                Console.WriteLine("6. 소드디펜스")
                 // 숫자야구,로또추첨기, 오목, 게시판
                 
                 Game game;
@@ -107,6 +108,10 @@ namespace TimeKiller
                     case '5':
                         Log("테트리스");
                         game = new Tetris();
+                        break;
+                    case '6':
+                        Log("소드디펜스");
+                        game = new SwordDefense();
                         break;
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
@@ -1893,10 +1898,8 @@ namespace TimeKiller
             }
         }
     }
-}
-
+    
 /*
-
 lock 대상 :
 actionQueue에 넣는 동작만
 
@@ -1935,3 +1938,24 @@ Solved List
 가이드라인 링크
 https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?dl=0
 */
+
+    class SwordDefense : GameWithScoreboard
+    {
+        protected override string GetLogPath(bool isMonthScore)
+        {
+            return TimeKiller.BASIC_PATH + @"\SwordDefense\" + (isMonthScore ? "MonthlyScoreboard.dat" : "Scoreboard.dat");
+        }
+
+        protected override void ResetGame()
+        {
+
+        }
+
+        protected override long Play()
+        {
+            Console.Clear();
+        }
+    }
+}
+
+
