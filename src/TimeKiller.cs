@@ -1607,11 +1607,14 @@ namespace TimeKiller
                     }
                 }
 
-                while (actionQueue.Count != 0)
+                lock (lockObject)
                 {
-                    var action = actionQueue.Peek();
-                    actionQueue.Dequeue();
-                    action();                        
+                    while (actionQueue.Count != 0)
+                    {
+                        var action = actionQueue.Peek();
+                        actionQueue.Dequeue();
+                        action();                        
+                    }
                 }
 
                 if (current.isOnGround && currentTimer == blockDownTimer) {
@@ -1684,6 +1687,7 @@ namespace TimeKiller
         {
             lock (lockObject)
             {
+                currentTimer.Stop();
                 Console.WriteLine("Lock Down");
                 Thread.Sleep(500);
                 actionQueue.Clear();
