@@ -83,7 +83,7 @@ namespace TimeKiller
                 Console.WriteLine("3. 블랙홀");
                 Console.WriteLine("4. 야찌");
                 Console.WriteLine("5. 테트리스");
-                Console.WriteLine("6. 소드디펜스")
+                Console.WriteLine("6. 소드디펜스");
                 // 숫자야구,로또추첨기, 오목, 게시판
                 
                 Game game;
@@ -164,13 +164,17 @@ namespace TimeKiller
     abstract class GameWithScoreboard : Game
     {
         Tuple<string, long>[] monthlyScores, allTimeScores;
+        string monthlyPath, allTimePath;
 
-        protected abstract string GetLogPath(bool isMonthScore);
+        protected abstract string GetLogPath();
 
         public GameWithScoreboard()
         {
             monthlyScores = new Tuple<string, long>[10];
             allTimeScores = new Tuple<string, long>[10];
+
+            monthlyPath = GetLogPath() + @"\MonthlyScores.dat";
+            allTimePath = GetLogPath() + @"\AllTimeScores.dat";
             
             FirstSet(true);
             FirstSet(false);
@@ -179,8 +183,9 @@ namespace TimeKiller
         private void FirstSet(bool isMonthScore)
         {
             Tuple<string, long>[] scores = isMonthScore ? monthlyScores : allTimeScores;
-            if ( !File.Exists(GetLogPath(isMonthScore)) ) {
-                BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.CreateNew));
+            string path = isMonthScore ? monthlyPath : allTimePath;
+            if ( !File.Exists(path) ) {
+                BinaryWriter bw = new BinaryWriter(File.Open(path, FileMode.CreateNew));
                 bw.Close();
 
                 for (int i = 0; i < 10; ++i)
@@ -189,7 +194,7 @@ namespace TimeKiller
                 WriteScoreboard(isMonthScore);
             }
             else {
-                using ( BinaryReader bw = new BinaryReader(File.Open(GetLogPath(isMonthScore), FileMode.Open)) )
+                using ( BinaryReader bw = new BinaryReader(File.Open(path, FileMode.Open)) )
                 {
                     for (int i = 0; i < 10; ++i)
                     {
@@ -314,7 +319,9 @@ namespace TimeKiller
 
         protected void WriteScoreboard(bool isMonthScore)
         {
-            using (BinaryWriter bw = new BinaryWriter(File.Open(GetLogPath(isMonthScore), FileMode.Create)))
+            string path = isMonthScore ? monthlyPath : allTimePath;
+            
+            using (BinaryWriter bw = new BinaryWriter(File.Open(path, FileMode.Create)))
             {
                 Tuple<string, long>[] scores;
             
@@ -371,6 +378,8 @@ namespace TimeKiller
     
     class BeARich : GameWithScoreboard
     {
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\BeARich";
+
         public const long startMoney = 10000L;
         Random randomSeed;
         private long money, nTimes, bestMoney;
@@ -380,9 +389,9 @@ namespace TimeKiller
             
         }
 
-        protected override string GetLogPath(bool isMonthScore)
+        protected override string GetLogPath()
         {
-            return TimeKiller.BASIC_PATH + (isMonthScore ? @"\BeARich\MonthlyScoreboard.dat" : @"\BeARich\Scoreboard.dat");
+            return BASIC_PATH;
         }
 
         protected override void ResetGame()
@@ -512,9 +521,9 @@ namespace TimeKiller
 
         }
 
-        protected override string GetLogPath(bool isMonthScore)
+        protected override string GetLogPath()
         {
-            return BASIC_PATH + (isMonthScore ? @"\MonthlyScoreboard.dat" : @"\Scoreboard.dat");
+            return BASIC_PATH;
         }
 
         protected override void ResetGame()
@@ -879,6 +888,8 @@ namespace TimeKiller
 
     class Yahtzee : GameWithScoreboard
     {
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\Yahtzee";
+
         private Dice[] dices;
         private int[] scoreboard;
         private bool[] isScored;
@@ -926,9 +937,9 @@ namespace TimeKiller
             
         }
 
-        protected override string GetLogPath(bool isMonthScore = false)
+        protected override string GetLogPath()
         {
-            return TimeKiller.BASIC_PATH + (isMonthScore ? @"\Yahtzee\MonthlyScoreboard.dat" : @"\Yahtzee\Scoreboard.dat");
+            return BASIC_PATH;
         }
 
         protected override void ResetGame()
@@ -1428,6 +1439,7 @@ namespace TimeKiller
 
     class Tetris : GameWithScoreboard
     {
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\Tetris\";
         public const int WIDTH = 10, LENGTH = 40;
         const char defalultHoldingChar = ' ';
         object lockObject = new object();
@@ -1451,9 +1463,9 @@ namespace TimeKiller
             return matrix[x, y];
         }
 
-        protected override string GetLogPath(bool isMonthScore)
+        protected override string GetLogPath()
         {
-            return TimeKiller.BASIC_PATH + @"\Tetris\" + (isMonthScore ? "MonthlyScoreboard.dat" : "Scoreboard.dat");
+            return BASIC_PATH;
         }
 
         protected override void ResetGame()
@@ -1945,9 +1957,11 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
 
     class SwordDefense : GameWithScoreboard
     {
-        protected override string GetLogPath(bool isMonthScore)
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\SwordDefense\";
+
+        protected override string GetLogPath()
         {
-            return TimeKiller.BASIC_PATH + @"\SwordDefense\" + (isMonthScore ? "MonthlyScoreboard.dat" : "Scoreboard.dat");
+            return BASIC_PATH;
         }
 
         protected override void ResetGame()
@@ -1958,6 +1972,8 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
         protected override long Play()
         {
             Console.Clear();
+            
+            return 0;
         }
     }
 }
