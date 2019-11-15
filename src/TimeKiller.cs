@@ -1955,6 +1955,73 @@ Solved List
 https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?dl=0
 */
 
+    class AvoidBlock : GameWithScoreboard
+    {
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\AvoidBlock\";
+        const int WIDTH = 8, LENGTH = 30;
+        object lockObject;
+
+        System.Timers.Timer blockDownTimer, scoreTimer;
+        long score;
+        bool isDead;
+
+        protected override string GetLogPath()
+        {
+            return BASIC_PATH;
+        }
+
+        protected override void ResetGame()
+        {
+            blockDownTimer = new System.Timers.Timer(1000);
+            blockDownTimer.Elapsed += BlockDownEvent;
+            scoreTimer = new System.Timers.Timer(10);
+            scoreTimer.Elapsed += ScoreEvent;
+
+            score = 0;
+            isDead = false;
+        }
+
+        protected override long Play()
+        {
+            Console.Clear();
+
+            Console.WriteLine("점수 : {0}\n", score);
+            /*
+            foreach (int j in Enumerable.Range(0, LENGTH))
+            {
+                foreach (int i in Enumerable.Range(0, WIDTH))
+                    Console.Write()
+            }
+            */
+
+            Console.SetCursorPosition(3, 32);
+            Console.Write("■");
+
+            while (isDead == false)
+            {
+
+            }
+            
+            return score;
+        }
+
+        private void BlockDownEvent(object source, ElapsedEventArgs e)
+        {
+            
+        }
+
+        private void ScoreEvent(object source, ElapsedEventArgs e)
+        {
+            score += 10;
+            lock (lockObject)
+            {
+                Console.SetCursorPosition(0, 5);
+                Console.Write(score);
+            }
+        }
+    }
+
+
     class SwordDefense : GameWithScoreboard
     {
         public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\SwordDefense\";
@@ -1977,49 +2044,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
         }
     }
 
-    class AvoidBlock : GameWithScoreboard
-    {
-        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\AvoidBlock\";
-        object lockObject;
-
-        System.Timers.Timer blockDownTimer, scoreTimer;
-        long score;
-
-        protected override string GetLogPath()
-        {
-            return BASIC_PATH;
-        }
-
-        protected override void ResetGame()
-        {
-            blockDownTimer = new System.Timers.Timer(1000);
-            blockDownTimer.Elapsed += BlockDownEvent;
-            scoreTimer = new System.Timers.Timer(10);
-            blockDownTimer.Elapsed += ScoreEvent;
-        }
-
-        protected override long Play()
-        {
-            Console.Clear();
-            
-            return 0;
-        }
-
-        private void BlockDownEvent(object source, ElapsedEventArgs e)
-        {
-            
-        }
-
-        private void ScoreEvent(object source, ElapsedEventArgs e)
-        {
-            score += 10;
-            lock (lockObject)
-            {
-                
-            }
-        }
-    }
-
+    
     class Template : GameWithScoreboard
     {
         public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\???\";
