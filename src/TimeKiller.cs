@@ -1976,6 +1976,71 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             return 0;
         }
     }
+
+    class AvoidBlock : GameWithScoreboard
+    {
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\AvoidBlock\";
+        object lockObject;
+
+        System.Timers.Timer blockDownTimer, scoreTimer;
+        long score;
+
+        protected override string GetLogPath()
+        {
+            return BASIC_PATH;
+        }
+
+        protected override void ResetGame()
+        {
+            blockDownTimer = new System.Timers.Timer(1000);
+            blockDownTimer.Elapsed += BlockDownEvent;
+            scoreTimer = new System.Timers.Timer(10);
+            blockDownTimer.Elapsed += ScoreEvent;
+        }
+
+        protected override long Play()
+        {
+            Console.Clear();
+            
+            return 0;
+        }
+
+        private void BlockDownEvent(object source, ElapsedEventArgs e)
+        {
+            
+        }
+
+        private void ScoreEvent(object source, ElapsedEventArgs e)
+        {
+            score += 10;
+            lock (lockObject)
+            {
+                
+            }
+        }
+    }
+
+    class Template : GameWithScoreboard
+    {
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\???\";
+
+        protected override string GetLogPath()
+        {
+            return BASIC_PATH;
+        }
+
+        protected override void ResetGame()
+        {
+
+        }
+
+        protected override long Play()
+        {
+            Console.Clear();
+            
+            return 0;
+        }
+    }
 }
 
 
