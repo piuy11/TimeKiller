@@ -1311,14 +1311,33 @@ namespace TimeKiller
 
             var temp = isBlock;
             isBlock = newIsBlock;
-            /*
+            
             int originX = x, originY = y;
             while (CheckCollision() == true)
             {
                 y--;
-                if (y == 10)
+                if (y == 10) {
+                    y = originY;
+                    break;
+                }
             }
-            */
+            while (CheckCollision() == true)
+            {
+                x--;
+                if (x == -3) {
+                    x = originX;
+                    break;
+                }
+            }
+            while (CheckCollision() == true)
+            {
+                x++;
+                if (x == 10) {
+                    x = originX;
+                    break;
+                }
+            }
+
             if (CheckCollision() == true)
                 isBlock = temp;
         }
@@ -1334,6 +1353,33 @@ namespace TimeKiller
             
             var temp = isBlock;
             isBlock = newIsBlock;
+            
+            int originX = x, originY = y;
+            while (CheckCollision() == true)
+            {
+                y--;
+                if (y == 10) {
+                    y = originY;
+                    break;
+                }
+            }
+            while (CheckCollision() == true)
+            {
+                x--;
+                if (x == -3) {
+                    x = originX;
+                    break;
+                }
+            }
+            while (CheckCollision() == true)
+            {
+                x++;
+                if (x == 10) {
+                    x = originX;
+                    break;
+                }
+            }
+
             if (CheckCollision() == true)
                 isBlock = temp;
         }
@@ -1684,8 +1730,8 @@ namespace TimeKiller
 
             Console.Clear();
             Console.WriteLine("PAUSED!");
-            Console.WriteLine("Press Esc Key To Exit");
-            Console.WriteLine("Press Any Key To Continue");
+            Console.WriteLine("Enter 키를 누르면 게임을 종료합니다");
+            Console.WriteLine("아무 키를 누르면 게임을 계속합니다");
             var input = Console.ReadKey(true);
             if (input.Key == ConsoleKey.Escape)
                 return true;
@@ -1864,11 +1910,10 @@ namespace TimeKiller
             isHoldUsed = false;
             timerResetCount = 0;
             blockDownTimer.Interval = GetSpeed();
+            isOnSoftDrop = false;
 
             PrintMatrix();
             actionQueue.Clear();
-            if (isOnSoftDrop)
-                ToggleSoftDrop();
             return;
         }
 
