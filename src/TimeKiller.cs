@@ -1300,7 +1300,7 @@ namespace TimeKiller
             PrintTrace();
         }
 
-        public void RotateClockwise()
+        public void RotateCounterClockwise()
         {
             bool[,] newIsBlock = new bool[size, size];
             foreach (int i in Enumerable.Range(0, size))
@@ -1323,7 +1323,7 @@ namespace TimeKiller
                 isBlock = temp;
         }
 
-        public void RotateCounterClockwise()
+        public void RotateClockwise()
         {
             bool[,] newIsBlock = new bool[size, size];
             foreach (int i in Enumerable.Range(0, size))
@@ -1737,7 +1737,7 @@ namespace TimeKiller
             Console.SetCursorPosition(30, 0);
             Console.Write("← → : 좌우 이동");
             Console.SetCursorPosition(30, 1);
-            Console.Write("↓ : 빠르게 낙하");
+            Console.Write("↓ : 빠른 낙하 on/off");
             Console.SetCursorPosition(30, 2);
             Console.Write("↑ : Hold");
             Console.SetCursorPosition(30, 3);
@@ -1845,14 +1845,12 @@ namespace TimeKiller
                     linesLeft -= erasedLines;
                     if (linesLeft <= 0) {
                         level++;
-                        blockDownTimer.Interval = GetSpeed();
                         if (level == 15)
                             linesLeft = 0;
                         else
                             linesLeft += 10;
                     }
                 }
-                
             }
 
             currentTimer.Stop();
@@ -1865,6 +1863,7 @@ namespace TimeKiller
                 AddQueue();
             isHoldUsed = false;
             timerResetCount = 0;
+            blockDownTimer.Interval = GetSpeed();
 
             PrintMatrix();
             actionQueue.Clear();
@@ -1925,6 +1924,8 @@ TO-DO List
 * SRS 추가? (안할수도)
 3. Back To Back, T-spin 등 점수 관련 추가
 12. 리펙토링
+21. 회전이 불가능할 시 벽을 밀도록
+
 
 
 
@@ -1949,6 +1950,8 @@ Solved List
 -> AddNewBlock 이후 actionQueue.Clear 실행으로 고쳐졌을수도?
 18. Lock Down 추가 (땅 위에 착지 후 0.5초간 못건드리는 상태)
 19. Extended Placement 추가 (땅 위에서 0.5초간 움직일 수 있음, 움직이면 리셋)
+20. toggle이 잘못 될 시 인터벌이 늘어난 채로 고정됨
+22. toggle on/off로 텍스트 수정
 
 
 가이드라인 링크
