@@ -35,15 +35,50 @@ foreach문 뒤에
 
             if (CheckCollision() == true)
                 isBlock = temp;
+			else
+                game.ToggleMoved();
+
+MoveLeft(), MoveRight()
+if문 뒤에
+			else
+                game.ToggleMoved();
 
 
 
 - In class Tetris
 
-variables
-(-) 
-(+) 
+variables, Tetris()
+(-) lockDownTimer
+(+) isMoved
+
+Play()
+actionQueue while문 lock
+actionQueue while문 안에
+					if (isMoved && currentTimer == beforeLockDownTimer && timerResetCount <= 15) {
+                        isMoved = false;
+                        beforeLockDownTimer.Stop();
+                        beforeLockDownTimer.Start();
+                        timerResetCount++;
+                    }
+LockDown()
+currentTimer.Stop();
+
+(+)
+public void ToggleMoved()
+{
+	isMoved = !isMoved;
+}
+
+ToggleSoftDrop()
+isMoved = false;
 
 AddNewBlock()
+(+)
 blockDownTimer.Interval = GetSpeed();
 isOnSoftDrop = false;
+(-)
+			if (isOnSoftDrop)
+                ToggleSoftDrop();
+
+
+LockDownEvent 제거
