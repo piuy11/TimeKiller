@@ -1,0 +1,49 @@
+수정사항
+
+-In class Tetrimino
+
+RotateCounterClockwise(), RotateClockwise()
+foreach문 뒤에
+			var temp = isBlock;
+            isBlock = newIsBlock;
+            
+            int originX = x, originY = y;
+            while (CheckCollision() == true)
+            {
+                y--;
+                if (y == 10) {
+                    y = originY;
+                    break;
+                }
+            }
+            while (CheckCollision() == true)
+            {
+                x--;
+                if (x == -3) {
+                    x = originX;
+                    break;
+                }
+            }
+            while (CheckCollision() == true)
+            {
+                x++;
+                if (x == 10) {
+                    x = originX;
+                    break;
+                }
+            }
+
+            if (CheckCollision() == true)
+                isBlock = temp;
+
+
+
+- In class Tetris
+
+variables
+(-) 
+(+) 
+
+AddNewBlock()
+blockDownTimer.Interval = GetSpeed();
+isOnSoftDrop = false;
