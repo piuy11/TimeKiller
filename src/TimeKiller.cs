@@ -1340,6 +1340,8 @@ namespace TimeKiller
 
             if (CheckCollision() == true)
                 isBlock = temp;
+            else
+                game.ToggleMoved();
         }
 
         public void RotateClockwise()
@@ -1382,20 +1384,26 @@ namespace TimeKiller
 
             if (CheckCollision() == true)
                 isBlock = temp;
+            else
+                game.ToggleMoved();
         }
 
         public void MoveLeft()
         {
             x--;
             if (CheckCollision() == true)
-                x++;   
+                x++;
+            else
+                game.ToggleMoved();
         }
 
         public void MoveRight()
         {
             x++;
             if (CheckCollision() == true)
-                x--;  
+                x--;
+            else
+                game.ToggleMoved();
         }
 
         public void HardDrop()
@@ -1497,8 +1505,8 @@ namespace TimeKiller
         Queue<Tetrimino> nextQueue;
         Dictionary<char, Tetrimino> models;
         char holding;
-        bool isHoldUsed, isDead, isOnSoftDrop;
-        System.Timers.Timer blockDownTimer, beforeLockDownTimer, lockDownTimer, currentTimer;
+        bool isHoldUsed, isDead, isOnSoftDrop, isMoved;
+        System.Timers.Timer blockDownTimer, beforeLockDownTimer, currentTimer;
         string scoredInfo;
         int scoredBefore;
         Queue<Action> actionQueue;
@@ -1525,6 +1533,7 @@ namespace TimeKiller
             isHoldUsed = false;
             isDead = false;
             isOnSoftDrop = false;
+            isMoved = false;
             scoredInfo = "";
             scoredBefore = 0;
 
@@ -1589,9 +1598,6 @@ namespace TimeKiller
             beforeLockDownTimer = new System.Timers.Timer(500);
             beforeLockDownTimer.Elapsed += BeforeLockDownEvent;
             beforeLockDownTimer.AutoReset = false;
-            lockDownTimer = new System.Timers.Timer(500);
-            lockDownTimer.Elapsed += LockDownEvent;
-            lockDownTimer.AutoReset = false;
             currentTimer = null;
         }
 
@@ -1654,13 +1660,6 @@ namespace TimeKiller
                             if (Pause() == true)
                                 return 0;
                             break;
-                        defalut:
-                            continue;
-                        }
-                        if (currentTimer == beforeLockDownTimer && timerResetCount <= 15) {
-                            beforeLockDownTimer.Stop();
-                            beforeLockDownTimer.Start();
-                            timerResetCount++;
                         }
                     }
                 }
@@ -1672,6 +1671,12 @@ namespace TimeKiller
                         var action = actionQueue.Peek();
                         actionQueue.Dequeue();
                         action();                        
+                    }
+                    if (isMoved && currentTimer == beforeLockDownTimer && timerResetCount <= 15) {
+                        isMoved = false;
+                        beforeLockDownTimer.Stop();
+                        beforeLockDownTimer.Start();
+                        timerResetCount++;
                     }
                 }
 
@@ -1696,6 +1701,11 @@ namespace TimeKiller
             Console.ReadKey(true);
 
             return score;
+        }
+
+        public void ToggleMoved()
+        {
+            isMoved = !isMoved;
         }
 
         private void ToggleSoftDrop()
@@ -1911,6 +1921,7 @@ namespace TimeKiller
             timerResetCount = 0;
             blockDownTimer.Interval = GetSpeed();
             isOnSoftDrop = false;
+            isMoved = false;
 
             PrintMatrix();
             actionQueue.Clear();
@@ -1937,14 +1948,6 @@ namespace TimeKiller
             lock (lockObject)
             {
                 actionQueue.Enqueue(() => current.Move(current.Down));
-            }
-        }
-
-        private void LockDownEvent(Object source, ElapsedEventArgs e)
-        {
-            lock (lockObject)
-            {
-                actionQueue.Enqueue(() => AddNewBlock(true));
             }
         }
 
