@@ -2013,8 +2013,10 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
         object lockObject;
 
         System.Timers.Timer blockDownTimer, scoreTimer;
+        char[,] blocks;
         long score;
         bool isDead;
+        int pos;
 
         protected override string GetLogPath()
         {
@@ -2028,8 +2030,19 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             scoreTimer = new System.Timers.Timer(10);
             scoreTimer.Elapsed += ScoreEvent;
 
+            blocks = new char[WIDTH, LENGTH];
+            foreach (int j in Enumberable.Range(0, LENGTH))
+            {
+                foreach (int i in Enumerable.Range(0, WIDTH))
+                {
+                    blocks[i, j] = ' ';
+                }
+            }
+
             score = 0;
             isDead = false;
+            pos = 4;
+            blocks[pos, LENGTH - 1] = '●';
         }
 
         protected override long Play()
@@ -2056,6 +2069,8 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             return score;
         }
 
+
+
         private void BlockDownEvent(object source, ElapsedEventArgs e)
         {
             
@@ -2066,8 +2081,8 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             score += 10;
             lock (lockObject)
             {
-                Console.SetCursorPosition(0, 5);
-                Console.Write(score);
+                Console.SetCursorPosition(0, 0);
+                Console.Write("점수 : " + score);
             }
         }
     }
