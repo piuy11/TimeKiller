@@ -2010,7 +2010,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
     {
         public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\AvoidBlock\";
         const int WIDTH = 8, LENGTH = 30;
-        object lockObject;
+        object lockObject = new object();
 
         System.Timers.Timer blockDownTimer, scoreTimer;
         char[,] blocks;
@@ -2056,10 +2056,13 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                     var input = Console.ReadKey(true);
 
                     if (input.Key == ConsoleKey.LeftArrow)
-                        pos = (pos - 1) % WIDTH;
+                        pos = (pos - 2) % WIDTH + 1;
                     else if (input.Key == ConsoleKey.RightArrow)
-                        pos = (pos + 1) % WIDTH;
-                    PrintScreen();
+                        pos = pos % WIDTH + 1;
+                    lock (lockObject)
+                    {
+                        PrintScreen();
+                    }
                 }
             }
 
@@ -2093,9 +2096,9 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
 
         private void ScoreEvent(object source, ElapsedEventArgs e)
         {
-            score += 10;
             lock (lockObject)
             {
+                score += 10;
                 Console.SetCursorPosition(0, 0);
                 Console.Write("점수 : " + score);
             }
