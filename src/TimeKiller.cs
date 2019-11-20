@@ -83,7 +83,7 @@ namespace TimeKiller
                 Console.WriteLine("3. 블랙홀");
                 Console.WriteLine("4. 야찌");
                 Console.WriteLine("5. 테트리스");
-                Console.WriteLine("6. 소드디펜스");
+                Console.WriteLine("6. 블럭피하기");
                 // 숫자야구,로또추첨기, 오목, 게시판
                 
                 Game game;
@@ -110,8 +110,8 @@ namespace TimeKiller
                         game = new Tetris();
                         break;
                     case '6':
-                        Log("소드디펜스");
-                        game = new SwordDefense();
+                        Log("블럭피하기");
+                        game = new AvoidBlock();
                         break;
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
@@ -2031,12 +2031,10 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             scoreTimer.Elapsed += ScoreEvent;
 
             blocks = new char[WIDTH, LENGTH];
-            foreach (int j in Enumberable.Range(0, LENGTH))
+            foreach (int j in Enumerable.Range(0, LENGTH))
             {
                 foreach (int i in Enumerable.Range(0, WIDTH))
-                {
                     blocks[i, j] = ' ';
-                }
             }
 
             score = 0;
@@ -2047,29 +2045,46 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
 
         protected override long Play()
         {
-            Console.Clear();
+            PrintScreen();
 
-            Console.WriteLine("점수 : {0}\n", score);
-            /*
-            foreach (int j in Enumerable.Range(0, LENGTH))
-            {
-                foreach (int i in Enumerable.Range(0, WIDTH))
-                    Console.Write()
-            }
-            */
-
-            Console.SetCursorPosition(3, 32);
-            Console.Write("■");
+            blockDownTimer.Start();
+            scoreTimer.Start();
 
             while (isDead == false)
             {
+                    if (Console.KeyAvailable) {
+                    var input = Console.ReadKey(true);
 
+                    if (input.Key == ConsoleKey.LeftArrow)
+                        pos = (pos - 1) % WIDTH;
+                    else if (input.Key == ConsoleKey.RightArrow)
+                        pos = (pos + 1) % WIDTH;
+                    PrintScreen();
+                }
             }
+
+            blockDownTimer.Stop();
+            scoreTimer.Stop();
             
             return score;
         }
 
+        private void PrintScreen()
+        {
+            Console.Clear();
 
+            Console.WriteLine("점수 : {0}\n", score);
+            
+            foreach (int j in Enumerable.Range(0, LENGTH))
+            {
+                foreach (int i in Enumerable.Range(0, WIDTH))
+                    Console.Write(blocks[i, j]);
+                Console.Write('\n');
+            }
+
+            Console.SetCursorPosition(pos, 32);
+            Console.Write('●');
+        }
 
         private void BlockDownEvent(object source, ElapsedEventArgs e)
         {
