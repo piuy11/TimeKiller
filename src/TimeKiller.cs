@@ -2055,10 +2055,17 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                     if (Console.KeyAvailable) {
                     var input = Console.ReadKey(true);
 
+                    int beforePos = pos;
                     if (input.Key == ConsoleKey.LeftArrow)
-                        pos = (pos - 2) % WIDTH + 1;
+                        pos = (pos - 1 + WIDTH) % WIDTH;
                     else if (input.Key == ConsoleKey.RightArrow)
-                        pos = pos % WIDTH + 1;
+                        pos = (pos + 1) % WIDTH;
+                    else
+                        continue;
+                    
+                    blocks[pos, LENGTH - 1] = '●';
+                    blocks[beforePos, LENGTH - 1] = ' ';
+
                     lock (lockObject)
                     {
                         PrintScreen();
@@ -2084,9 +2091,6 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                     Console.Write(blocks[i, j]);
                 Console.Write('\n');
             }
-
-            Console.SetCursorPosition(pos, 32);
-            Console.Write('●');
         }
 
         private void BlockDownEvent(object source, ElapsedEventArgs e)
