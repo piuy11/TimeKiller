@@ -2014,6 +2014,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
 
         System.Timers.Timer blockDownTimer, scoreTimer;
         char[,] blocks;
+        Random randomSeed;
         long score;
         bool isDead;
         int pos;
@@ -2037,6 +2038,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                     blocks[i, j] = ' ';
             }
 
+            randomSeed = new Random();
             score = 0;
             isDead = false;
             pos = 4;
@@ -2070,6 +2072,14 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             
             lock (lockObject)
             {
+                Console.SetCursorPosition(0, 35);
+                Console.WriteLine("GAME OVER!");
+                Console.WriteLine("엔터 키를 눌러 계속해 주세요");
+                ConsoleKeyInfo input;
+                do {
+                    input = Console.ReadKey(true);
+                } while (input.Key != ConsoleKey.Enter);
+                
                 return score;
             }
         }
@@ -2100,9 +2110,16 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
         {
             lock (lockObject)
             {
-                blocks[0, 0] = '■';
-                if (blocks[pos, LENGTH - 2] == '■')
+                if (blocks[pos, LENGTH - 2] == '■') {
                     isDead = true;
+                    return;
+                }
+                    
+                
+                foreach (int i in Enumerable.Range(0, WIDTH))
+                    blocks[i, 0] = ' ';
+                blocks[randomSeed.Next(0, WIDTH), 0] = '■';
+
                 for (int j = LENGTH - 2; j >= 0; --j)
                 {
                     string printingStr = "";
