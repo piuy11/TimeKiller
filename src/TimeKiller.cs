@@ -2026,7 +2026,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
 
         protected override void ResetGame()
         {
-            blockDownTimer = new System.Timers.Timer(100);
+            blockDownTimer = new System.Timers.Timer(200);
             blockDownTimer.Elapsed += BlockDownEvent;
             scoreTimer = new System.Timers.Timer(10);
             scoreTimer.Elapsed += ScoreEvent;
@@ -2064,6 +2064,9 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                         pos = (pos + 1) % WIDTH;
                     else
                         continue;
+                    
+                    if (blocks[pos, LENGTH - 1] == '■')
+                        isDead = true;
                 }
             }
 
@@ -2090,19 +2093,19 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
 
             Console.WriteLine("점수 : {0}\n", score);
 
-            foreach (int i in Enumerable.Range(0, WIDTH + 2))
+            foreach (int i in Enumerable.Range(0, WIDTH * 2 + 1))
                 Console.Write('-');
             Console.Write('\n');
                         
             foreach (int j in Enumerable.Range(0, LENGTH))
             {
                 Console.Write('|');
-                foreach (int i in Enumerable.Range(0, WIDTH))
-                    Console.Write(blocks[i, j]);
+                foreach (int i in Enumerable.Range(0, WIDTH * 2 - 1))
+                    Console.Write(' ');
                 Console.WriteLine("|");
             }
 
-            foreach (int i in Enumerable.Range(0, WIDTH + 2))
+            foreach (int i in Enumerable.Range(0, WIDTH * 2 + 1))
                 Console.Write('-');
         }
 
@@ -2127,11 +2130,13 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                     {
                         blocks[i, j + 1] = blocks[i, j];
                         printingStr += blocks[i, j];
+                        if (i != WIDTH - 1)
+                            printingStr += ' ';
                     }
                     Console.SetCursorPosition(1, j + 4);
                     Console.Write(printingStr);
                 }
-                Console.SetCursorPosition(pos + 1, LENGTH + 2);
+                Console.SetCursorPosition(pos * 2 + 1, LENGTH + 2);
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write('●');
                 Console.ResetColor();
