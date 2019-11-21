@@ -1743,7 +1743,7 @@ namespace TimeKiller
             Console.WriteLine("Enter 키를 누르면 게임을 종료합니다");
             Console.WriteLine("아무 키를 누르면 게임을 계속합니다");
             var input = Console.ReadKey(true);
-            if (input.Key == ConsoleKey.Escape)
+            if (input.Key == ConsoleKey.Enter)
                 return true;
 
             PrintMatrix();
@@ -2062,7 +2062,11 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                         var input = Console.ReadKey(true);
 
                         int beforePos = pos;
-                        if (input.Key == ConsoleKey.LeftArrow)
+                        if (input.Key == ConsoleKey.Escape) {
+                            if (Pause() == true)
+                                return score;
+                        }
+                        else if (input.Key == ConsoleKey.LeftArrow)
                             pos = (pos - 1 + WIDTH) % WIDTH;
                         else if (input.Key == ConsoleKey.RightArrow)
                             pos = (pos + 1) % WIDTH;
@@ -2090,6 +2094,25 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                 
                 return score;
             }
+        }
+
+        private bool Pause()
+        {
+            scoreTimer.Stop();
+            blockDownTimer.Stop();
+
+            Console.Clear();
+            Console.WriteLine("PAUSED!");
+            Console.WriteLine("Enter 키를 누르면 게임을 종료합니다");
+            Console.WriteLine("아무 키를 누르면 게임을 계속합니다");
+            var input = Console.ReadKey(true);
+            if (input.Key == ConsoleKey.Enter)
+                return true;
+
+            PrintScreen();
+            scoreTimer.Start();
+            blockDownTimer.Start();
+            return false;
         }
 
         private void PrintScreen()
