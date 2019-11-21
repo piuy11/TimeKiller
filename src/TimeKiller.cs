@@ -2009,7 +2009,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
     class AvoidBlock : GameWithScoreboard
     {
         public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\AvoidBlock\";
-        const int WIDTH = 8, LENGTH = 30;
+        const int WIDTH = 9, LENGTH = 30;
         object lockObject = new object();
 
         System.Timers.Timer blockDownTimer, scoreTimer;
@@ -2025,7 +2025,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
 
         protected override void ResetGame()
         {
-            blockDownTimer = new System.Timers.Timer(1000);
+            blockDownTimer = new System.Timers.Timer(100);
             blockDownTimer.Elapsed += BlockDownEvent;
             scoreTimer = new System.Timers.Timer(10);
             scoreTimer.Elapsed += ScoreEvent;
@@ -2062,21 +2062,16 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                         pos = (pos + 1) % WIDTH;
                     else
                         continue;
-                    
-                    blocks[pos, LENGTH - 1] = '●';
-                    blocks[beforePos, LENGTH - 1] = ' ';
-
-                    lock (lockObject)
-                    {
-                        PrintScreen();
-                    }
                 }
             }
 
             blockDownTimer.Stop();
             scoreTimer.Stop();
             
-            return score;
+            lock (lockObject)
+            {
+                return score;
+            }
         }
 
         private void PrintScreen()
@@ -2084,18 +2079,46 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             Console.Clear();
 
             Console.WriteLine("점수 : {0}\n", score);
-            
+
+            foreach (int i in Enumerable.Range(0, WIDTH + 2))
+                Console.Write('-');
+            Console.Write('\n');
+                        
             foreach (int j in Enumerable.Range(0, LENGTH))
             {
+                Console.Write('|');
                 foreach (int i in Enumerable.Range(0, WIDTH))
                     Console.Write(blocks[i, j]);
-                Console.Write('\n');
+                Console.WriteLine("|");
             }
+
+            foreach (int i in Enumerable.Range(0, WIDTH + 2))
+                Console.Write('-');
         }
 
         private void BlockDownEvent(object source, ElapsedEventArgs e)
         {
-            
+            lock (lockObject)
+            {
+                blocks[0, 0] = '■';
+                if (blocks[pos, LENGTH - 2] == '■')
+                    isDead = true;
+                for (int j = LENGTH - 2; j >= 0; --j)
+                {
+                    string printingStr = "";
+                    foreach (int i in Enumerable.Range(0, WIDTH))
+                    {
+                        blocks[i, j + 1] = blocks[i, j];
+                        printingStr += blocks[i, j];
+                    }
+                    Console.SetCursorPosition(1, j + 4);
+                    Console.Write(printingStr);
+                }
+                Console.SetCursorPosition(pos + 1, LENGTH + 2);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write('●');
+                Console.ResetColor();
+            }
         }
 
         private void ScoreEvent(object source, ElapsedEventArgs e)
