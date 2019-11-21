@@ -2017,7 +2017,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
         Random randomSeed;
         long score;
         bool isDead;
-        int pos;
+        int pos, blockRate, currentPoint;
 
         protected override string GetLogPath()
         {
@@ -2026,7 +2026,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
 
         protected override void ResetGame()
         {
-            blockDownTimer = new System.Timers.Timer(200);
+            blockDownTimer = new System.Timers.Timer(100);
             blockDownTimer.Elapsed += BlockDownEvent;
             scoreTimer = new System.Timers.Timer(10);
             scoreTimer.Elapsed += ScoreEvent;
@@ -2042,6 +2042,8 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             score = 0;
             isDead = false;
             pos = 4;
+            blockRate = 500;
+            currentPoint = 0;
             blocks[pos, LENGTH - 1] = '●';
         }
 
@@ -2055,18 +2057,21 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             while (isDead == false)
             {
                     if (Console.KeyAvailable) {
-                    var input = Console.ReadKey(true);
+                    lock (lockObject)
+                    {
+                        var input = Console.ReadKey(true);
 
-                    int beforePos = pos;
-                    if (input.Key == ConsoleKey.LeftArrow)
-                        pos = (pos - 1 + WIDTH) % WIDTH;
-                    else if (input.Key == ConsoleKey.RightArrow)
-                        pos = (pos + 1) % WIDTH;
-                    else
-                        continue;
-                    
-                    if (blocks[pos, LENGTH - 1] == '■')
-                        isDead = true;
+                        int beforePos = pos;
+                        if (input.Key == ConsoleKey.LeftArrow)
+                            pos = (pos - 1 + WIDTH) % WIDTH;
+                        else if (input.Key == ConsoleKey.RightArrow)
+                            pos = (pos + 1) % WIDTH;
+                        else
+                            continue;
+                        
+                        if (blocks[pos, LENGTH - 1] == '■')
+                            isDead = true;
+                    }
                 }
             }
 
@@ -2117,11 +2122,23 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                     isDead = true;
                     return;
                 }
-                    
-                
+
                 foreach (int i in Enumerable.Range(0, WIDTH))
                     blocks[i, 0] = ' ';
-                blocks[randomSeed.Next(0, WIDTH), 0] = '■';
+
+                blockRate = 500 + (int)(score / 10000) * 100;
+                Console.SetCursorPosition(0, 35);
+                Console.Write(blockRate);
+                currentPoint += blockRate;
+                while (currentPoint >= 1000)
+                {
+                    currentPoint -= 1000;
+                    int x = randomSeed.Next(0, WIDTH);
+                    if (blocks[x, 0] == '■')
+                        currentPoint += 1000;
+                    else
+                        blocks[x, 0] = '■';
+                }
 
                 for (int j = LENGTH - 2; j >= 0; --j)
                 {
@@ -2153,6 +2170,16 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             }
         }
     }
+/*
+TO-DO List
+1. Esc (PAUSE) 기능 추가
+2. 난이도 조절
+
+
+Solved List
+
+*/
+
 
 
     class SwordDefense : GameWithScoreboard
