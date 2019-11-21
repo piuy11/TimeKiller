@@ -2126,7 +2126,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
                 foreach (int i in Enumerable.Range(0, WIDTH))
                     blocks[i, 0] = ' ';
 
-                blockRate = 500 + (int)(score / 10000) * 100;
+                blockRate = 200 + (int)(score / 5000) * 100;
                 Console.SetCursorPosition(0, 35);
                 Console.Write(blockRate);
                 currentPoint += blockRate;
