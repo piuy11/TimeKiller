@@ -84,6 +84,8 @@ namespace TimeKiller
                 Console.WriteLine("4. 야찌");
                 Console.WriteLine("5. 테트리스");
                 Console.WriteLine("6. 블럭피하기");
+				Console.WriteLine("7. 블랙잭");
+				Console.WriteLine("8. 텍사스홀덤");
                 // 숫자야구,로또추첨기, 오목, 게시판
                 
                 Game game;
@@ -113,6 +115,16 @@ namespace TimeKiller
                         Log("블럭피하기");
                         game = new AvoidBlock();
                         break;
+					case '7':
+						Log("블랙잭");
+                        game = new BlackJack();
+                        break;
+					/*
+					case '8':
+						Log("텍사스홀덤");
+                        game = new TexasHoldEm();
+                        break;
+					*/
                     case '>':
                         if (Console.ReadLine() == "power overwhelming") {
                             Log("관리자");
@@ -383,11 +395,6 @@ namespace TimeKiller
         public const long startMoney = 10000L;
         Random randomSeed;
         private long money, nTimes, bestMoney;
-
-        public BeARich() : base()
-        {
-            
-        }
 
         protected override string GetLogPath()
         {
@@ -2193,6 +2200,7 @@ https://www.dropbox.com/s/g55gwls0h2muqzn/tetris%20guideline%20docs%202009.zip?d
             }
         }
     }
+
 /*
 TO-DO List
 1. Esc (PAUSE) 기능 추가
@@ -2203,7 +2211,90 @@ Solved List
 
 */
 
+/*
+BlackJack Rules
 
+1. 딜러와 플레이어는 각자 2장씩 받는다. 딜러는 한장만 오픈, 플레이어는 2장 모두 오픈
+2-1. 플레이어가 블랙잭일시 2.5배를 받는다(1.5배 이득)
+2-2. 딜러가 블랙잭일 시 패배
+2-3. 모두 블랙잭일 시 무승부(stand-off)
+*스플릿시 블랙잭 x
+3. Stand / Hit / Split / Double Down / Surrender
+3-1. 더블A 스플릿시 한 장씩만
+3-2. Double Down 시 2배 배팅, 딱 1장만 더 받음
+3-3. Surrender 시 50% 환급
+4. 모두 끝나면 딜러 시작, 16이하면 Hit, 17이상이면 Stand
+5. 딜러의 오픈된 카드가 A일시 Insurance 가능 (50% 지불, 블랙잭일 시 사이드 배팅의 2배)
+*/
+
+	class BlackJack : GameWithScoreboard
+    {
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\BlackJack\";
+		public const long SEED_MONEY = 10000;
+
+		Deck deck;
+		long money, bestMoney;
+		int nth;
+		List<Card> playerCards, dealerCards;
+
+        protected override string GetLogPath()
+        {
+            return BASIC_PATH;
+        }
+
+        protected override void ResetGame()
+        {
+			deck = new Deck();
+			money = bestMoney = SEED_MONEY;
+			nth = 1;
+			playerCards = new List<Card>();
+			dealerCards = new List<Card>();
+
+        }
+
+        protected override long Play()
+        {
+            while (money > 0)
+			{
+				playerCards.Add(deck.Pick());
+				playerCards.Add(deck.Pick());
+				dealerCards.Add(deck.Pick());
+				dealerCards.Add(deck.Pick());
+
+
+				Console.Clear();
+				Console.WriteLine("{0}번째 판", nth);
+				Console.WriteLine("남은 카드 수 : " + deck.Count());
+				Console.WriteLine("딜러");
+				Console.WriteLine(dealerCards[0].name + ' ' + dealerCards[1].name + "\n");
+				Console.ReadKey(true);
+			}
+            
+            return bestMoney;
+        }
+    }
+
+	class TexasHoldEm : GameWithScoreboard
+    {
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\TexasHoldEm\";
+
+        protected override string GetLogPath()
+        {
+            return BASIC_PATH;
+        }
+
+        protected override void ResetGame()
+        {
+
+        }
+
+        protected override long Play()
+        {
+            Console.Clear();
+            
+            return 0;
+        }
+    }
 
     class SwordDefense : GameWithScoreboard
     {
