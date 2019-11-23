@@ -2266,7 +2266,21 @@ BlackJack Rules
 				Console.WriteLine("{0}번째 판", nth);
 				Console.WriteLine("남은 카드 수 : " + deck.Count());
 				Console.WriteLine("딜러");
-				Console.WriteLine(dealerCards[0].name + ' ' + dealerCards[1].name + "\n");
+				Console.WriteLine(dealerCards[0].name + ' ' + "??\n");
+				Console.WriteLine("플레이어");
+				Console.WriteLine(playerCards[0].name + ' ' + playerCards[1].name + "\n");
+				Console.WriteLine("1. 스탠드 (Stand)");
+				Console.WriteLine("2. 히트 (Hit)");
+				Console.WriteLine("3. 더블다운 (Double Down))");
+				Console.WriteLine("4. 서랜더(Surrender))");
+				Console.WriteLine("5. 스플릿(Split)");
+
+				int choice;
+				while (true)
+				{
+					var input = Console.ReadKey(true).KeyChar;
+					if (input )
+				}
 				Console.ReadKey(true);
 			}
             
