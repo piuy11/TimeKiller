@@ -2260,32 +2260,76 @@ BlackJack Rules
 				playerCards.Add(deck.Pick());
 				dealerCards.Add(deck.Pick());
 				dealerCards.Add(deck.Pick());
+				bool isFirstHit = true;
+				bool isSplitAble = (playerCards[0].value == playerCards[1].value);
 
-
-				Console.Clear();
-				Console.WriteLine("{0}번째 판", nth);
-				Console.WriteLine("남은 카드 수 : " + deck.Count());
-				Console.WriteLine("딜러");
-				Console.WriteLine(dealerCards[0].name + ' ' + "??\n");
-				Console.WriteLine("플레이어");
-				Console.WriteLine(playerCards[0].name + ' ' + playerCards[1].name + "\n");
-				Console.WriteLine("1. 스탠드 (Stand)");
-				Console.WriteLine("2. 히트 (Hit)");
-				Console.WriteLine("3. 더블다운 (Double Down))");
-				Console.WriteLine("4. 서랜더(Surrender))");
-				Console.WriteLine("5. 스플릿(Split)");
-
-				int choice;
 				while (true)
 				{
-					var input = Console.ReadKey(true).KeyChar;
-					if (input )
+					Console.Clear();
+					Console.WriteLine("{0}번째 판", nth);
+					Console.WriteLine("남은 카드 수 : " + deck.Count());
+					Console.WriteLine("딜러");
+					Thread.Sleep(600);
+					Console.Write("?? ");
+					Thread.Sleep(600);
+					Console.WriteLine(dealerCards[0].name + "\n");
+					Console.WriteLine("플레이어");
+					Thread.Sleep(600);
+					Console.Write(dealerCards[0].name + " ");
+					Thread.Sleep(600);
+					Console.WriteLine(dealerCards[1].name + "\n");
+					Thread.Sleep(600);
+					Console.WriteLine("1. 스탠드 (Stand)");
+					Console.WriteLine("2. 히트 (Hit)");
+					if (isFirstHit) {
+						Console.WriteLine("3. 더블다운 (Double Down))");
+						Console.WriteLine("4. 서랜더(Surrender))");
+						if (isSplitAble)
+							Console.WriteLine("5. 스플릿(Split)");
+					}
+
+					int choice = 0;
+					while ((choice >= 1 && choice <= 5) == false)
+					{
+						var input = Console.ReadKey(true).KeyChar;
+						switch (input)
+						{
+							case '1':
+								choice = 1;
+								break;
+							case '2':
+								choice = 2;
+								break;
+							case '3':
+								if (isFirstHit)
+									choice = 3;
+								break;
+							case '4':
+								if (isFirstHit)
+									choice = 4;
+								break;
+							case '5':
+								if (isFirstHit && isSplitAble)
+									choice = 5;
+								break;
+						}
+					}
+					
+
 				}
-				Console.ReadKey(true);
+
+				// dealer turn
+
+				nth++;
 			}
             
             return bestMoney;
         }
+
+		private bool IsBlackJack(List<Card> cards)
+		{
+			return false;
+		}
     }
 
 	class TexasHoldEm : GameWithScoreboard
