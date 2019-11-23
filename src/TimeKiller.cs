@@ -2263,7 +2263,8 @@ BlackJack Rules
 				bool isFirstHit = true;
 				bool isSplitAble = (playerCards[0].value == playerCards[1].value);
 
-				while (true)
+				bool isBusted = false;
+				while (isBusted == false)
 				{
 					Console.Clear();
 					Console.WriteLine("{0}번째 판", nth);
@@ -2279,6 +2280,9 @@ BlackJack Rules
 					Thread.Sleep(600);
 					Console.WriteLine(dealerCards[1].name + "\n");
 					Thread.Sleep(600);
+
+					if (IsBlackJack(dealerCards))
+
 					Console.WriteLine("1. 스탠드 (Stand)");
 					Console.WriteLine("2. 히트 (Hit)");
 					if (isFirstHit) {
