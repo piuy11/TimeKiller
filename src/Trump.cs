@@ -83,6 +83,11 @@ namespace TimeKiller
             }
         }
 
+		public int Count()
+		{
+			return cards.Count;
+		}
+
         public Card Pick()
         {
             if (cards.Count == 0)
