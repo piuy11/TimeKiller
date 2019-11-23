@@ -2271,17 +2271,24 @@ BlackJack Rules
 					Console.WriteLine("남은 카드 수 : " + deck.Count());
 					Console.WriteLine("딜러");
 					Thread.Sleep(600);
-					Console.Write("?? ");
+					Console.Write("??  ");
 					Thread.Sleep(600);
 					Console.WriteLine(dealerCards[0].name + "\n");
 					Console.WriteLine("플레이어");
 					Thread.Sleep(600);
-					Console.Write(dealerCards[0].name + " ");
+					Console.Write(dealerCards[0].name + "  ");
 					Thread.Sleep(600);
 					Console.WriteLine(dealerCards[1].name + "\n");
 					Thread.Sleep(600);
 
-					if (IsBlackJack(dealerCards))
+					if (IsBlackJack(dealerCards)) {
+						if (IsBlackJack(playerCards)) {
+							Console.SetCursorPosition()
+						}
+					}
+					else if (IsBlackJack(playerCards)) {
+
+					}
 
 					Console.WriteLine("1. 스탠드 (Stand)");
 					Console.WriteLine("2. 히트 (Hit)");
@@ -2332,7 +2339,10 @@ BlackJack Rules
 
 		private bool IsBlackJack(List<Card> cards)
 		{
-			return false;
+			if (cards.Count != 2)
+				return false;
+			
+			return (cards.Any(card => card.value == 1) && cards[0].value + cards[1].value + 10 == 21);
 		}
     }
 
