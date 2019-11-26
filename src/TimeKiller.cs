@@ -2346,6 +2346,31 @@ BlackJack Rules
 		}
     }
 
+	class NinetyEightCards : GameWithScoreboard
+    {
+        public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\NinetyEightCards\";
+
+        protected override string GetLogPath()
+        {
+            return BASIC_PATH;
+        }
+
+        protected override void ResetGame()
+        {
+
+        }
+
+        protected override long Play()
+        {
+            Console.Clear();
+			Console.WriteLine("걸린 시간 - 00:00\n");
+
+			
+            
+            return 0;
+        }
+    }
+
 	class TexasHoldEm : GameWithScoreboard
     {
         public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\TexasHoldEm\";
