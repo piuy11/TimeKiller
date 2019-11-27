@@ -2371,7 +2371,7 @@ BlackJack Rules
 			scoreTimer.Start();
 
             Console.Clear();
-			Console.WriteLine("걸린 시간 - 00:00\n");
+			Console.WriteLine("걸린 시간 -  0: 0\n");
 			Console.WriteLine("슬롯");
 			Console.WriteLine("----------------------------------------");
 			Console.WriteLine("| 선택 |   1   |   2   |   3   |   4   |");
