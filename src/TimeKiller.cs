@@ -84,8 +84,8 @@ namespace TimeKiller
                 Console.WriteLine("4. 야찌");
                 Console.WriteLine("5. 테트리스");
                 Console.WriteLine("6. 블럭피하기");
-				Console.WriteLine("7. 블랙잭");
-				Console.WriteLine("8. 텍사스홀덤");
+				Console.WriteLine("7. 98 Cards");
+				// Console.WriteLine("8. 텍사스홀덤");
                 // 숫자야구,로또추첨기, 오목, 게시판
                 
                 Game game;
@@ -116,8 +116,8 @@ namespace TimeKiller
                         game = new AvoidBlock();
                         break;
 					case '7':
-						Log("블랙잭");
-                        game = new BlackJack();
+						Log("98 Cards");
+                        game = new NinetyEightCards();
                         break;
 					/*
 					case '8':
@@ -2283,7 +2283,7 @@ BlackJack Rules
 
 					if (IsBlackJack(dealerCards)) {
 						if (IsBlackJack(playerCards)) {
-							Console.SetCursorPosition()
+							// Console.SetCursorPosition();
 						}
 					}
 					else if (IsBlackJack(playerCards)) {
@@ -2360,11 +2360,28 @@ BlackJack Rules
 
         }
 
-        protected override long Play()
+        protected override long Play() // ▲▼
         {
             Console.Clear();
 			Console.WriteLine("걸린 시간 - 00:00\n");
+			Console.WriteLine("슬롯");
+			Console.WriteLine("----------------------------------------");
+			Console.WriteLine("| 선택 |   1   |   2   |   3   |   4   |");
+			Console.WriteLine("----------------------------------------");
+			Console.WriteLine("|      | ▲   1 | ▲   1 | ▼ 100 | ▼ 100 |");
+			Console.WriteLine("----------------------------------------");
+			Console.Write("\n\n");
 
+			Console.WriteLine("숫자들");
+			Console.WriteLine("--------------------------------------------------------");
+			Console.WriteLine("| 선택 |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |");
+			Console.WriteLine("--------------------------------------------------------");
+			Console.WriteLine("|      |  10 |  11 |  12 |  13 |  10 |  11 |  12 |  13 |");
+			Console.WriteLine("--------------------------------------------------------");
+
+
+
+			Console.ReadKey(true);
 			
             
             return 0;
