@@ -2349,6 +2349,10 @@ BlackJack Rules
 	class NinetyEightCards : GameWithScoreboard
     {
         public const string BASIC_PATH = TimeKiller.BASIC_PATH + @"\NinetyEightCards\";
+		object lockObject = new object();
+
+		int elapsedSeconds;
+		System.Timers.Timer scoreTimer;
 
         protected override string GetLogPath()
         {
@@ -2357,11 +2361,15 @@ BlackJack Rules
 
         protected override void ResetGame()
         {
-
+			elapsedSeconds = 0;
+			scoreTimer = new System.Timers.Timer(1000);
+			scoreTimer.Elapsed += ScoreEvent;
         }
 
         protected override long Play() // ▲▼
         {
+			scoreTimer.Start();
+
             Console.Clear();
 			Console.WriteLine("걸린 시간 - 00:00\n");
 			Console.WriteLine("슬롯");
@@ -2378,13 +2386,24 @@ BlackJack Rules
 			Console.WriteLine("--------------------------------------------------------");
 			Console.WriteLine("|      |  10 |  11 |  12 |  13 |  10 |  11 |  12 |  13 |");
 			Console.WriteLine("--------------------------------------------------------");
+			Console.WriteLine("\n남은 카드 수 : 98");
 
 
-
+			
 			Console.ReadKey(true);
 			
             
             return 0;
+        }
+
+		private void ScoreEvent(object source, ElapsedEventArgs e)
+        {
+            lock (lockObject)
+            {
+				elapsedSeconds++;
+                Console.SetCursorPosition(12, 0);
+                Console.Write("{0, 2}:{1, 2}", elapsedSeconds / 60, elapsedSeconds % 60);
+            }
         }
     }
 
