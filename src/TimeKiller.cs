@@ -2370,8 +2370,24 @@ BlackJack Rules
         {
 			scoreTimer.Start();
 
-            Console.Clear();
-			Console.WriteLine("걸린 시간 -  0: 0\n");
+			while (true)
+			{
+				PrintScreen();
+				Console.ReadKey(true);
+			}
+
+
+			
+			Console.ReadKey(true);
+			
+            
+            return 0;
+        }
+
+		private void PrintScreen()
+		{
+			Console.Clear();
+			Console.WriteLine("걸린 시간 - {0, 2}:{1, 2}\n", elapsedSeconds / 60, elapsedSeconds % 60);
 			Console.WriteLine("슬롯");
 			Console.WriteLine("----------------------------------------");
 			Console.WriteLine("| 선택 |   1   |   2   |   3   |   4   |");
@@ -2387,14 +2403,7 @@ BlackJack Rules
 			Console.WriteLine("|      |  10 |  11 |  12 |  13 |  10 |  11 |  12 |  13 |");
 			Console.WriteLine("--------------------------------------------------------");
 			Console.WriteLine("\n남은 카드 수 : 98");
-
-
-			
-			Console.ReadKey(true);
-			
-            
-            return 0;
-        }
+		}
 
 		private void ScoreEvent(object source, ElapsedEventArgs e)
         {
