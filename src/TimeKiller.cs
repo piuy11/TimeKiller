@@ -2432,7 +2432,6 @@ BlackJack Rules
 
         protected override long Play()
         {
-            Console.Clear();
             
             return 0;
         }
@@ -2458,6 +2457,49 @@ BlackJack Rules
             
             return 0;
         }
+    }
+
+	class JuparyeongStars : Game
+    {
+
+
+        protected override void ResetGame()
+        {
+
+        }
+
+        protected override long Play()
+        {
+            PrintScreen();
+			Console.ReadKey(true);
+            
+            return 0;
+        }
+
+		private void PrintScreen()
+		{
+			Console.Clear();
+			Console.WriteLine("슬롯");
+			Console.WriteLine("----------------------------------------");
+			Console.WriteLine("| 선택 |   1   |   2   |   3   |   4   |");
+			Console.WriteLine("----------------------------------------");
+			Console.WriteLine("|      | ▲   1 | ▲   1 | ▼ 100 | ▼ 100 |");
+			Console.WriteLine("----------------------------------------");
+			Console.Write("\n\n");
+
+			Console.WriteLine("숫자들");
+			Console.WriteLine("--------------------------------------------------------");
+			Console.WriteLine("| 선택 |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |");
+			Console.WriteLine("--------------------------------------------------------");
+			Console.WriteLine("|      |  10 |  11 |  12 |  13 |  10 |  11 |  12 |  13 |");
+			Console.WriteLine("--------------------------------------------------------");
+			Console.WriteLine("\n남은 카드 수 : 98");
+		}
+
+		private void Event(object source, ElapsedEventArgs e)
+		{
+
+		}
     }
 
     
